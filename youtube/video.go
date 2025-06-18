@@ -20,7 +20,7 @@ type Video struct {
 	MadeForKids   bool     `json:"made_for_kids"`
 }
 
-func (v *Video) Upload(ctx context.Context, secretfile string, token *oauth2.Token) (string, error) {
+func (v *Video) Upload(ctx context.Context, token *oauth2.Token) (string, error) {
 
 	// First open the video file and verify it exists
 	file, err := os.Open(v.Path)
@@ -30,7 +30,7 @@ func (v *Video) Upload(ctx context.Context, secretfile string, token *oauth2.Tok
 	defer file.Close()
 
 	// Create a new service with oauth client
-	config, err := Config(secretfile)
+	config, err := Config()
 	if err != nil {
 		return "", err
 	}
@@ -55,12 +55,21 @@ func (v *Video) Upload(ctx context.Context, secretfile string, token *oauth2.Tok
 }
 
 func (v *Video) toUpload() (*youtube.Video, error) {
+	privacy := "private"
+	if v.PrivacyStatus != "" {
+		privacy = v.PrivacyStatus
+	}
+
 	upload := &youtube.Video{
 		Snippet: &youtube.VideoSnippet{
 			Title:       v.Title,
 			Description: v.Description,
 			Tags:        v.Tags,
 			CategoryId:  v.CategoryID,
+		},
+		Status: &youtube.VideoStatus{
+			PrivacyStatus: privacy,
+			MadeForKids:   v.MadeForKids,
 		},
 	}
 

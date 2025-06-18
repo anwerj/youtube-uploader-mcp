@@ -24,11 +24,21 @@ func init() {
 	}
 }
 
-func Info(message string, args ...any) {
+func Infof(message string, args ...any) {
 	if logFile == nil {
 		return
 	}
 	_, err := fmt.Fprintf(logFile, "[INFO] "+message+"\n", args...)
+	if err != nil {
+		panic("Error writing to log file: " + err.Error())
+	}
+}
+
+func Errorf(message string, args ...any) {
+	if logFile == nil {
+		return
+	}
+	_, err := fmt.Fprintf(logFile, "[ERROR] "+message+"\n", args...)
 	if err != nil {
 		panic("Error writing to log file: " + err.Error())
 	}
