@@ -21,10 +21,19 @@ func (t *RefreshTokenTool) Define(ctx context.Context) mcp.Tool {
 		mcp.WithDescription("Refreshes the OAuth2 access token for YouTube API. If the UploadVideo tool is used "+
 			"and it requires to refresh token, Use this tool. "+
 			"This tool is useful for maintaining a valid access token without user intervention."),
+		mcp.WithString("client_secret_file",
+			mcp.Required(),
+			mcp.Description("Client secret file for OAuth2 authentication"),
+		),
 	)
 }
 
 func (t *RefreshTokenTool) Handle(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	clientSecretFile := request.GetString("client_secret_file", "./client_secrets.json")
+	if clientSecretFile == "" {
+		return mcp.NewToolResultError("client_secret_file is required"), nil
+	}
+
 	// first load the token from the file
 	token, err := youtube.ReadToken()
 	if err != nil {
@@ -37,7 +46,7 @@ func (t *RefreshTokenTool) Handle(ctx context.Context, request mcp.CallToolReque
 
 	// Here you would typically call a function to refresh the access token using the client secret file
 	// For example:
-	accessToken, err := youtube.RefreshAccessToken(token)
+	accessToken, err := youtube.RefreshAccessToken(clientSecretFile, token)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to refresh access token: " + err.Error()), nil
 	}
