@@ -1,24 +1,16 @@
-name: Build and Release Binaries
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
+
 permissions:
-  contents: write
+  contents: write  # Needed for softprops/action-gh-release
 
 jobs:
-  build:
-    name: Build for ${{ matrix.goos }}-${{ matrix.goarch }}
+  release:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64]
-        include:
-          - goos: darwin
-            goarch: arm64
 
     steps:
       - name: Checkout code
@@ -29,14 +21,26 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Build binary
+      - name: Build all binaries
         run: |
           mkdir -p dist
-          ext=""
-          if [ "${{ matrix.goos }}" = "windows" ]; then
-            ext=".exe"
-          fi
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/youtube-uploader-mcp-${{ matrix.goos }}-${{ matrix.goarch }}$ext .
+
+          platforms=(
+            "linux/amd64"
+            "darwin/amd64"
+            "darwin/arm64"
+            "windows/amd64"
+          )
+
+          for platform in "${platforms[@]}"; do
+            IFS="/" read -r GOOS GOARCH <<< "$platform"
+            output="dist/youtube-uploader-mcp-${GOOS}-${GOARCH}"
+            [ "$GOOS" = "windows" ] && output="${output}.exe"
+
+            echo "🔧 Building for $GOOS/$GOARCH"
+            env GOOS=$GOOS GOARCH=$GOARCH \
+              go build -ldflags "-s -w" -o "$output" .
+          done
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
