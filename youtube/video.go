@@ -6,11 +6,11 @@ import (
 	"os"
 
 	"golang.org/x/oauth2"
-	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
 type Video struct {
+	ID            string   `json:"id"`
 	Path          string   `json:"path"`
 	Title         string   `json:"title"`
 	Description   string   `json:"description"`
@@ -29,15 +29,9 @@ func (v *Video) Upload(ctx context.Context, token *oauth2.Token) (string, error)
 	}
 	defer file.Close()
 
-	// Create a new service with oauth client
-	config, err := Config()
+	service, err := Service(ctx, token)
 	if err != nil {
-		return "", err
-	}
-	client := config.Client(ctx, token)
-	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create YouTube service: %w", err)
 	}
 
 	upload, err := v.toUpload()

@@ -2,6 +2,7 @@ package accesstoken
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/anwerj/youtube-uploader-mcp/tool"
 	"github.com/anwerj/youtube-uploader-mcp/youtube"
@@ -19,8 +20,9 @@ func (t *AccessTokenTool) Name() string {
 func (t *AccessTokenTool) Define(ctx context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
 		mcp.WithDescription("AccessToken tool retrieves the access token for YouTube API authentication."+
-			"It requires the client secret file and code to fetch the access token."+
-			"User must first authenticate using the authenticate tool to get the code."),
+			"It requires code to fetch the access token."+
+			"User must first authenticate using the authenticate tool to get the code."+
+			"It will return channel details ex: ID. Use this ID in further calls to refresh token or upload video"),
 		mcp.WithString("code",
 			mcp.Required(),
 			mcp.Description("The code part received on redirected URL, Only send the code part, not the full URL."),
@@ -29,24 +31,33 @@ func (t *AccessTokenTool) Define(ctx context.Context) mcp.Tool {
 }
 
 func (t *AccessTokenTool) Handle(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	// Implement the access token retrieval logic here
-	// For now, we will just return a dummy response
 	code := request.GetString("code", "")
 	if code == "" {
 		return mcp.NewToolResultError("code is required"), nil
 	}
 
-	// Here you would typically call a function to get the access token using the client secret file and code
-	// For example:
-	accessToken, err := youtube.GetAccessToken(code)
+	token, err := youtube.GetAccessToken(code)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to get access token: " + err.Error()), nil
 	}
+	// Once we have received the access token, lets fetch the channel for the token
+	channel, err := youtube.GetChannelForToken(token)
+	if err != nil {
+		return mcp.NewToolResultError("Failed to get channel: " + err.Error()), nil
+	}
+
 	// save the access token or use it as needed
-	err = youtube.SaveToken(accessToken)
+	err = youtube.SaveChannel(channel)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to save access token: " + err.Error()), nil
 	}
+	// First mask the secrets in channel
+	channel.Mask()
 
-	return mcp.NewToolResultText("Access token retrieved successfully: " + accessToken.Expiry.GoString()), nil
+	bytes, err := json.Marshal(channel)
+	if err != nil {
+		return mcp.NewToolResultError("Failed to marshal channels: " + err.Error()), nil
+	}
+
+	return mcp.NewToolResultText(string(bytes)), nil
 }

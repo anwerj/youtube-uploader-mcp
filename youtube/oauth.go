@@ -7,6 +7,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// AuthURL generates the authorization URL for YouTube OAuth2 authentication.
 func AuthURL(redirectURI string) (string, error) {
 	// Implement the logic to start the YouTube client with the provided secret file and redirect URI
 	// This is a placeholder function and should be replaced with actual implementation
@@ -24,6 +25,7 @@ func AuthURL(redirectURI string) (string, error) {
 	return authURL, nil
 }
 
+// GetAccessToken exchanges the authorization code for an access token.
 func GetAccessToken(code string) (*oauth2.Token, error) {
 	if code == "" {
 		return nil, fmt.Errorf("code must be provided")
@@ -41,6 +43,7 @@ func GetAccessToken(code string) (*oauth2.Token, error) {
 	return token, nil
 }
 
+// RefreshAccessToken refreshes the access token using the provided token.
 func RefreshAccessToken(token *oauth2.Token) (*oauth2.Token, error) {
 	if token == nil {
 		return nil, fmt.Errorf("token must be provided")

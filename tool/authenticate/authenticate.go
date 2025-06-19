@@ -2,7 +2,6 @@ package authenticate
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/anwerj/youtube-uploader-mcp/tool"
 	"github.com/anwerj/youtube-uploader-mcp/youtube"
@@ -40,7 +39,5 @@ func (t *AuthenticateTool) Handle(ctx context.Context, request mcp.CallToolReque
 		return mcp.NewToolResultError("Failed to get authentication URL: " + err.Error()), nil
 	}
 
-	return mcp.NewToolResultText(
-		fmt.Sprintf("Created the AuthURL for Oauth, user need to open this URL: %s",
-			authUrl)), nil
+	return mcp.NewToolResultText(authUrl), nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/anwerj/youtube-uploader-mcp/tool"
 	"github.com/anwerj/youtube-uploader-mcp/tool/accesstoken"
 	"github.com/anwerj/youtube-uploader-mcp/tool/authenticate"
+	"github.com/anwerj/youtube-uploader-mcp/tool/getchannels"
 	"github.com/anwerj/youtube-uploader-mcp/tool/refreshtoken"
 	"github.com/anwerj/youtube-uploader-mcp/tool/uploadvideo"
 	"github.com/anwerj/youtube-uploader-mcp/youtube"
@@ -46,6 +47,7 @@ func main() {
 	tools := []tool.Tool{
 		&authenticate.AuthenticateTool{},
 		&accesstoken.AccessTokenTool{},
+		&getchannels.GetChannelsTool{},
 		&refreshtoken.RefreshTokenTool{},
 		&uploadvideo.UploadVideoTool{},
 	}

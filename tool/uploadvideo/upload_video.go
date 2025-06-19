@@ -2,6 +2,7 @@ package uploadvideo
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/anwerj/youtube-uploader-mcp/tool"
@@ -24,6 +25,10 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 			mcp.Required(),
 			mcp.Description("Path to the video file"),
 		),
+		mcp.WithString("channel_id",
+			mcp.Required(),
+			mcp.Description("Channel ID to upload the video to, if not provided, Agent should call tool channels to get the list of channels and ask the user to select one"),
+		),
 		mcp.WithString("description",
 			mcp.Required(),
 			mcp.Description("Description of the video, if not provided, Agent should generate a description based on the video content"),
@@ -40,6 +45,12 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 			mcp.Required(),
 			mcp.Description("Category ID for the video, if not provided, Agent should generate a category based on the video description"),
 		),
+		mcp.WithString("status",
+			mcp.Description("status of video, could be any of unlisted, public, private. Default is private"),
+		),
+		mcp.WithBoolean("made_for_kids",
+			mcp.Description("Whether the video is made exclusively for kids. Default is false"),
+		),
 	)
 }
 
@@ -52,23 +63,37 @@ func (t *UploadVideoTool) Handle(ctx context.Context, request mcp.CallToolReques
 	if filePath == "" || description == "" || title == "" || tags == "" || categoryID == "" {
 		return mcp.NewToolResultError("all fields are required: file_path, description, title, tags, category_id"), nil
 	}
+	channelId := request.GetString("channel_id", "")
+	if channelId == "" {
+		return mcp.NewToolResultError("channel_id is required to upload video"), nil
+	}
+	status := request.GetString("status", "private")
+	madeForKids := request.GetBool("made_for_kids", false)
 
-	token, err := youtube.ReadToken()
+	channel, err := youtube.GetChannelByID(channelId)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to load token: " + err.Error()), nil
 	}
 
 	video := &youtube.Video{
-		Path:        filePath,
-		Title:       title,
-		Description: description,
-		Tags:        strings.Split(tags, ","), // Assuming tags are comma-separated, you might want to split them
-		CategoryID:  categoryID,
+		Path:          filePath,
+		Title:         title,
+		Description:   description,
+		Tags:          strings.Split(tags, ","),
+		CategoryID:    categoryID,
+		PrivacyStatus: status,
+		MadeForKids:   madeForKids,
 	}
-	id, err := video.Upload(ctx, token) // Assuming you have a way to get the OAuth2 token
+	id, err := video.Upload(ctx, channel.Token)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to upload video: " + err.Error()), nil
 	}
+	video.ID = id
 
-	return mcp.NewToolResultText("Video uploaded successfully with ID:" + id), nil
+	bytes, err := json.Marshal(video)
+	if err != nil {
+		return mcp.NewToolResultError("failed to marshal the video: " + err.Error()), nil
+	}
+
+	return mcp.NewToolResultText(string(bytes)), nil
 }
