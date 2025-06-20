@@ -1,12 +1,12 @@
 # YouTube Uploader MCP
 
-This project provides a command-line tool and supporting Go packages for uploading videos to YouTube using the Model Context Protocol (MCP). It includes OAuth2 authentication, token management, and video upload functionality.
+AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever shared with LLMs or third‑party apps and all free of cost! It includes OAuth2 authentication, token management, and video upload functionality.
 
 ## Features
-- Upload videos to YouTube via command line
+- Upload videos to YouTube from MCP Client(Claude/Cursor/VS Code)
 - OAuth2 authentication flow
 - Access token and refresh token management
-- Modular Go package structure
+- Multi Channel Support
 
 ## Getting Started
 
