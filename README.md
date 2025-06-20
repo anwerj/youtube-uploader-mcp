@@ -8,6 +8,10 @@ AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever s
 - Access token and refresh token management
 - Multi Channel Support
 
+## Demo
+![output](https://github.com/user-attachments/assets/f8c2c303-ef77-4fa9-99a6-5de7f120ffac)
+
+
 ## Getting Started
 
 Visit the [Releases](https://github.com/anwerj/youtube-uploader-mcp/releases) page and download the appropriate binary for your operating system:
