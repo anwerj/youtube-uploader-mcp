@@ -12,6 +12,9 @@ AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever s
 - Multi Channel Support
 
 ## Demo
+
+<p align="center"> <a href="https://youtu.be/fcywz5FIUpM" target="_blank"><img src="https://img.youtube.com/vi/fcywz5FIUpM/0.jpg"/></a> </p>
+
 ![output](https://github.com/user-attachments/assets/f8c2c303-ef77-4fa9-99a6-5de7f120ffac)
 
 
