@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/anwerj/youtube-uploader-mcp/tool"
 	"github.com/anwerj/youtube-uploader-mcp/youtube"
@@ -54,14 +55,19 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 	)
 }
 
-func (t *UploadVideoTool) Handle(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (t *UploadVideoTool) Handle(
+	ctx context.Context,
+	request mcp.CallToolRequest,
+) (*mcp.CallToolResult, error) {
+
 	filePath := request.GetString("file_path", "")
 	description := request.GetString("description", "")
 	title := request.GetString("title", "")
 	tags := request.GetString("tags", "")
 	categoryID := request.GetString("category_id", "")
 	if filePath == "" || description == "" || title == "" || tags == "" || categoryID == "" {
-		return mcp.NewToolResultError("all fields are required: file_path, description, title, tags, category_id"), nil
+		return mcp.NewToolResultError(
+			"all fields are required: file_path, description, title, tags, category_id"), nil
 	}
 	channelId := request.GetString("channel_id", "")
 	if channelId == "" {
@@ -73,6 +79,35 @@ func (t *UploadVideoTool) Handle(ctx context.Context, request mcp.CallToolReques
 	channel, err := youtube.GetChannelByID(channelId)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to load token: " + err.Error()), nil
+	}
+
+	if channel == nil ||
+		channel.Token == nil {
+		return mcp.NewToolResultError("channel or token is nil, please authenticate first"), nil
+	}
+
+	if channel.Token.Expiry.IsZero() ||
+		channel.Token.AccessToken == "" ||
+		channel.Token.RefreshToken == "" {
+		return mcp.NewToolResultError(
+			"channel token is expired or malformed, please start authenticate"), nil
+	}
+
+	// Check if token is expiring (within 2 minutes)
+	now := time.Now().In(channel.Token.Expiry.Location())
+	if channel.Token.Expiry.Before(now.Add(2 * time.Minute)) {
+		newToken, err := youtube.RefreshAccessToken(channel.Token)
+		if err != nil {
+			return mcp.NewToolResultError(
+				"token was expiring, Failed to refresh token: " + err.Error()), nil
+		}
+		channel.Token = newToken
+		// Optionally save the refreshed token for future use
+		err = youtube.SaveChannel(channel)
+		if err != nil {
+			return mcp.NewToolResultError(
+				"token was expiring, Failed to save refreshed token: " + err.Error()), nil
+		}
 	}
 
 	video := &youtube.Video{

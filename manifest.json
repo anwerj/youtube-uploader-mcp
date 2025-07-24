@@ -1,0 +1,59 @@
+{
+  "dxt_version": "0.1",
+  "name": "youtube-uploader-mcp",
+  "display_name": "Youtube Uploader MCP",
+  "version": "0.1.0",
+  "description": "AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever shared with LLMs or third‑party apps and all free of cost! It includes OAuth2 authentication, token management, and video upload functionality.",
+  "author": {
+    "name": "Anwerj",
+    "email": "anwerj.com@gmail.com",
+    "url": "i.anwerj.com"
+  },
+  "documentation": "https://github.com/anwerj/youtube-uploader-mcp",
+  "icon": "icon.png",
+  "screenshots": [
+    "screenshot.png"
+  ],
+  "server": {
+    "type": "binary",
+    "entry_point": "server/youtube-uploader-mcp",
+    "mcp_config": {
+      "command": "${__dirname}/server/youtube-uploader-mcp",
+      "args": [],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "Upload Video",
+      "description": "Uploads Video to Youtube"
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ]
+  },
+  "user_config": {
+    "client-sercret-file": {
+      "type": "string",
+      "title": "Client Secret File",
+      "description": "File path to client secrets",
+      "required": true,
+      "sensitive": false
+    }
+  },
+  "keywords": [
+    "Youtube",
+    "Upload",
+    "MCP",
+    "Youtube Server"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anwerj/youtube-uploader-mcp"
+  }
+}

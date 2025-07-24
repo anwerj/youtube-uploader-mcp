@@ -12,11 +12,10 @@ AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever s
 - Multi Channel Support
 
 ## Demo
-
+### Setup and Demo Video
 <p align="center"> <a href="https://youtu.be/fcywz5FIUpM" target="_blank"><img src="https://img.youtube.com/vi/fcywz5FIUpM/0.jpg"/></a> </p>
 
 ![output](https://github.com/user-attachments/assets/f8c2c303-ef77-4fa9-99a6-5de7f120ffac)
-
 
 ## Getting Started
 
@@ -59,7 +58,6 @@ To upload to YouTube, you must configure OAuth and get a client_secret.json file
 ### Usage
 
 - `main.go`: Entry point for the CLI
-- `main/`: Additional main package files
 - `youtube/`: YouTube API integration (OAuth, video upload, config)
 - `tool/`: Command-line tools for authentication, token, and upload
 - `hook/`, `logn/`: Supporting packages
