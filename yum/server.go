@@ -1,4 +1,4 @@
-package server
+package yum
 
 import (
 	"context"
@@ -6,12 +6,18 @@ import (
 	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/anwerj/youtube-uploader-mcp/hook"
 	"github.com/anwerj/youtube-uploader-mcp/logn"
-	"github.com/anwerj/youtube-uploader-mcp/server/tool"
+	"github.com/anwerj/youtube-uploader-mcp/yum/tool"
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func Build(ctx context.Context, clientSecretFile string) (*server.MCPServer, error) {
+func Build(ctx context.Context, clientSecretFile string, workingDir string) (*server.MCPServer, error) {
 	c := core.NewCore(clientSecretFile)
+	if err := c.WithSecretFile(clientSecretFile); err != nil {
+		return nil, err
+	}
+	if err := c.WithWorkingDir(workingDir); err != nil {
+		return nil, err
+	}
 
 	s := server.NewMCPServer(
 		"Youtube Uploader MCP",

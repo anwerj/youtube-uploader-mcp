@@ -1,27 +1,45 @@
 package core
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/anwerj/youtube-uploader-mcp/logn"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/youtube/v3"
 )
 
 type Core struct {
-	config *oauth2.Config
+	config     *oauth2.Config
+	workingDir string
 }
 
 func NewCore(clientSecretFile string) *Core {
-	config, err := Init(clientSecretFile)
-	if err != nil {
-		logn.Errorf("Failed to initialize YouTube client: %v\n", err)
-		os.Exit(1)
-	}
-	return &Core{
-		config: config,
-	}
+	core := &Core{}
+	return core
 }
 
-//------------------ AUTH RELATED ------------------ //
+func (c *Core) WithSecretFile(secretfile string) error {
+	var err error
+	if secretfile == "" {
+		return fmt.Errorf("secret file must be provided")
+	}
 
-// Auth methods are implemented in oauth.go
+	secrets, err := os.ReadFile(secretfile)
+	if err != nil {
+		return fmt.Errorf("failed to read secret file: %w", err)
+	}
+
+	config, err := google.ConfigFromJSON(secrets, youtube.YoutubeUploadScope, youtube.YoutubeReadonlyScope)
+	if err != nil {
+		return fmt.Errorf("failed to create OAuth2 config: %w", err)
+	}
+	c.config = config
+
+	return nil
+}
+
+func (c *Core) WithWorkingDir(dir string) error {
+	c.workingDir = dir
+	return nil
+}

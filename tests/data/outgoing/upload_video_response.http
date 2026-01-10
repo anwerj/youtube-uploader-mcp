@@ -1,0 +1,35 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "kind": "youtube#video",
+  "etag": "v3_etag_placeholder",
+  "id": "video_id_12345",
+  "snippet": {
+    "publishedAt": "2023-10-27T10:00:00Z",
+    "channelId": "UC_channel_id_placeholder",
+    "title": "Uploaded Video Title",
+    "description": "Description of the uploaded video",
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/video_id_12345/default.jpg",
+        "width": 120,
+        "height": 90
+      }
+    },
+    "channelTitle": "Channel Name",
+    "categoryId": "22",
+    "liveBroadcastContent": "none",
+    "localized": {
+      "title": "Uploaded Video Title",
+      "description": "Description of the uploaded video"
+    }
+  },
+  "status": {
+    "uploadStatus": "uploaded",
+    "privacyStatus": "private",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true
+  }
+}

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"golang.org/x/oauth2"
@@ -84,11 +83,7 @@ func (c *Core) SaveChannel(channel *Channel) error {
 	}
 	channels[channel.ID] = channel
 
-	current, err := user.Current()
-	if err != nil {
-		return fmt.Errorf("failed to get current user: %s", err.Error())
-	}
-	fChannelsPath := filepath.Join(current.HomeDir, fChannelsFileName)
+	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
 	// Open file or create it
 	file, err := os.OpenFile(fChannelsPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
@@ -105,11 +100,7 @@ func (c *Core) SaveChannel(channel *Channel) error {
 }
 
 func (c *Core) ReadChannels(ignoreError bool) (Channels, error) {
-	current, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %s", err.Error())
-	}
-	fChannelsPath := filepath.Join(current.HomeDir, fChannelsFileName)
+	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
 	file, err := os.Open(fChannelsPath)
 	if err != nil {
 		if os.IsNotExist(err) && ignoreError {

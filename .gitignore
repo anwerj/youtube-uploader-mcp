@@ -1,3 +1,4 @@
 .vscode
 main
 youtube-uploader-mcp
+tests/data/tmp
