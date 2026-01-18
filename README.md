@@ -3,6 +3,7 @@
 
 # YouTube Uploader MCP
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/anwerj/youtube-uploader-mcp)](https://archestra.ai/mcp-catalog/anwerj__youtube-uploader-mcp)
+[![Tests](https://github.com/anwerj/youtube-uploader-mcp/actions/workflows/tests.yaml/badge.svg)](https://github.com/anwerj/youtube-uploader-mcp/actions/workflows/tests.yaml)
 
 AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever shared with LLMs or third‑party apps and all free of cost! It includes OAuth2 authentication, token management, and video upload functionality.
 
