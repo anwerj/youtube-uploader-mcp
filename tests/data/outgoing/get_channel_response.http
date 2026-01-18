@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+
+{
+	"items": [
+		{
+			"id": "mock-channel-id",
+			"snippet": {
+				"title": "mock-channel-title"
+			}
+		}
+	]
+}

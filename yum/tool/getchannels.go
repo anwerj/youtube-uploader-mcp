@@ -1,14 +1,15 @@
-package getchannels
+package tool
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/anwerj/youtube-uploader-mcp/youtube"
+	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
 type GetChannelsTool struct {
+	Core *core.Core
 }
 
 func (t *GetChannelsTool) Name() string {
@@ -25,7 +26,7 @@ func (t *GetChannelsTool) Define(context.Context) mcp.Tool {
 }
 
 func (t *GetChannelsTool) Handle(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	channels, err := youtube.ReadChannels(false)
+	channels, err := t.Core.ReadChannels(false)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to get channels: " + err.Error()), nil
 	}

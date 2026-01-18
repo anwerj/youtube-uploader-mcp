@@ -1,0 +1,1 @@
+GET https://youtube.googleapis.com/youtube/v3/channels?alt=json&mine=true&part=snippet&prettyPrint=false HTTP/1.1

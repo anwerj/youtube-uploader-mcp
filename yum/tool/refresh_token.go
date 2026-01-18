@@ -1,16 +1,15 @@
-package refreshtoken
+package tool
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/anwerj/youtube-uploader-mcp/tool"
-	"github.com/anwerj/youtube-uploader-mcp/youtube"
+	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
 type RefreshTokenTool struct {
-	tool.Tool
+	Core *core.Core
 }
 
 func (t *RefreshTokenTool) Name() string {
@@ -36,7 +35,7 @@ func (t *RefreshTokenTool) Handle(ctx context.Context, request mcp.CallToolReque
 		return mcp.NewToolResultError("channel_id is required, use tool getchannel"), nil
 	}
 
-	channel, err := youtube.GetChannelByID(channelID)
+	channel, err := t.Core.GetChannelByID(channelID)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to get channel: " + err.Error()), nil
 	}
@@ -51,14 +50,14 @@ func (t *RefreshTokenTool) Handle(ctx context.Context, request mcp.CallToolReque
 		return mcp.NewToolResultText("Invalid access token loaded:. "), nil
 	}
 
-	newToken, err := youtube.RefreshAccessToken(token)
+	newToken, err := t.Core.RefreshAccessToken(token)
 
 	if err != nil {
 		return mcp.NewToolResultError("Failed to refresh access token: " + err.Error()), nil
 	}
 	channel.Token = newToken
 	// Save the refreshed access token
-	err = youtube.SaveChannel(channel)
+	err = t.Core.SaveChannel(channel)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to save refreshed access token: " + err.Error()), nil
 	}

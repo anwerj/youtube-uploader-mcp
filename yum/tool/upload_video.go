@@ -1,4 +1,4 @@
-package uploadvideo
+package tool
 
 import (
 	"context"
@@ -6,13 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anwerj/youtube-uploader-mcp/tool"
-	"github.com/anwerj/youtube-uploader-mcp/youtube"
+	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
 type UploadVideoTool struct {
-	tool.Tool
+	Core *core.Core
 }
 
 func (t *UploadVideoTool) Name() string {
@@ -49,6 +48,9 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 		mcp.WithString("status",
 			mcp.Description("status of video, could be any of unlisted, public, private. Default is private"),
 		),
+		mcp.WithString("publish_at",
+			mcp.Description("The date and time when the video is scheduled to publish. It can be set only if the privacy status of the video is private. The value is specified in ISO 8601 format (YYYY-MM-DDThh:mm:ss.sZ)."),
+		),
 		mcp.WithBoolean("made_for_kids",
 			mcp.Description("Whether the video is made exclusively for kids. Default is false"),
 		),
@@ -76,7 +78,7 @@ func (t *UploadVideoTool) Handle(
 	status := request.GetString("status", "private")
 	madeForKids := request.GetBool("made_for_kids", false)
 
-	channel, err := youtube.GetChannelByID(channelId)
+	channel, err := t.Core.GetChannelByID(channelId)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to load token: " + err.Error()), nil
 	}
@@ -96,21 +98,21 @@ func (t *UploadVideoTool) Handle(
 	// Check if token is expiring (within 2 minutes)
 	now := time.Now().In(channel.Token.Expiry.Location())
 	if channel.Token.Expiry.Before(now.Add(2 * time.Minute)) {
-		newToken, err := youtube.RefreshAccessToken(channel.Token)
+		newToken, err := t.Core.RefreshAccessToken(channel.Token)
 		if err != nil {
 			return mcp.NewToolResultError(
 				"token was expiring, Failed to refresh token: " + err.Error()), nil
 		}
 		channel.Token = newToken
 		// Optionally save the refreshed token for future use
-		err = youtube.SaveChannel(channel)
+		err = t.Core.SaveChannel(channel)
 		if err != nil {
 			return mcp.NewToolResultError(
 				"token was expiring, Failed to save refreshed token: " + err.Error()), nil
 		}
 	}
 
-	video := &youtube.Video{
+	video := &core.Video{
 		Path:          filePath,
 		Title:         title,
 		Description:   description,
@@ -118,8 +120,9 @@ func (t *UploadVideoTool) Handle(
 		CategoryID:    categoryID,
 		PrivacyStatus: status,
 		MadeForKids:   madeForKids,
+		PublishAt:     request.GetString("publish_at", ""),
 	}
-	id, err := video.Upload(ctx, channel.Token)
+	id, err := t.Core.UploadVideo(ctx, video, channel.Token)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to upload video: " + err.Error()), nil
 	}

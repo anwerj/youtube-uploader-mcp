@@ -1,16 +1,15 @@
-package accesstoken
+package tool
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/anwerj/youtube-uploader-mcp/tool"
-	"github.com/anwerj/youtube-uploader-mcp/youtube"
+	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
 type AccessTokenTool struct {
-	tool.Tool
+	Core *core.Core
 }
 
 func (t *AccessTokenTool) Name() string {
@@ -36,18 +35,19 @@ func (t *AccessTokenTool) Handle(ctx context.Context, request mcp.CallToolReques
 		return mcp.NewToolResultError("code is required"), nil
 	}
 
-	token, err := youtube.GetAccessToken(code)
+	token, err := t.Core.GetAccessToken(code)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to get access token: " + err.Error()), nil
 	}
 	// Once we have received the access token, lets fetch the channel for the token
-	channel, err := youtube.GetChannelForToken(token)
+	channel, err := t.Core.GetChannelForToken(token)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to get channel: " + err.Error()), nil
 	}
 
 	// save the access token or use it as needed
-	err = youtube.SaveChannel(channel)
+	err = t.Core.SaveChannel(channel)
+
 	if err != nil {
 		return mcp.NewToolResultError("Failed to save access token: " + err.Error()), nil
 	}

@@ -1,4 +1,4 @@
-package youtube
+package core
 
 import (
 	"context"
@@ -18,40 +18,18 @@ type Video struct {
 	CategoryID    string   `json:"category_id"`
 	PrivacyStatus string   `json:"privacy_status"`
 	MadeForKids   bool     `json:"made_for_kids"`
-}
-
-func (v *Video) Upload(ctx context.Context, token *oauth2.Token) (string, error) {
-
-	// First open the video file and verify it exists
-	file, err := os.Open(v.Path)
-	if err != nil {
-		return "", fmt.Errorf("failed to open video file %s: %w", v.Path, err)
-	}
-	defer file.Close()
-
-	service, err := Service(ctx, token)
-	if err != nil {
-		return "", fmt.Errorf("failed to create YouTube service: %w", err)
-	}
-
-	upload, err := v.toUpload()
-	if err != nil {
-		return "", fmt.Errorf("failed to convert video to upload format: %w", err)
-	}
-
-	call := service.Videos.Insert([]string{"snippet", "status"}, upload)
-	resp, err := call.Media(file).Do()
-	if err != nil {
-		return "", fmt.Errorf("failed to upload video: %w", err)
-	}
-
-	return resp.Id, nil
+	PublishAt     string   `json:"publish_at,omitempty"`
 }
 
 func (v *Video) toUpload() (*youtube.Video, error) {
 	privacy := "private"
 	if v.PrivacyStatus != "" {
 		privacy = v.PrivacyStatus
+	}
+
+	// If PublishAt is set, privacy status must be private
+	if v.PublishAt != "" {
+		privacy = "private"
 	}
 
 	upload := &youtube.Video{
@@ -64,8 +42,37 @@ func (v *Video) toUpload() (*youtube.Video, error) {
 		Status: &youtube.VideoStatus{
 			PrivacyStatus: privacy,
 			MadeForKids:   v.MadeForKids,
+			PublishAt:     v.PublishAt,
 		},
 	}
 
 	return upload, nil
+}
+
+func (c *Core) UploadVideo(ctx context.Context, video *Video, token *oauth2.Token) (string, error) {
+
+	// First open the video file and verify it exists
+	file, err := os.Open(video.Path)
+	if err != nil {
+		return "", fmt.Errorf("failed to open video file %s: %w", video.Path, err)
+	}
+	defer file.Close()
+
+	service, err := c.Service(ctx, token)
+	if err != nil {
+		return "", fmt.Errorf("failed to create YouTube service: %w", err)
+	}
+
+	upload, err := video.toUpload()
+	if err != nil {
+		return "", fmt.Errorf("failed to convert video to upload format: %w", err)
+	}
+
+	call := service.Videos.Insert([]string{"snippet", "status"}, upload)
+	resp, err := call.Media(file).Do()
+	if err != nil {
+		return "", fmt.Errorf("failed to upload video: %w", err)
+	}
+
+	return resp.Id, nil
 }

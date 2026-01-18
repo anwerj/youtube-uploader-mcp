@@ -1,0 +1,8 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"access_token": "mock-access-token",
+	"token_type": "Bearer",
+	"expires_in": 3600
+}

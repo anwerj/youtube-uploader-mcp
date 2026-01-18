@@ -34,6 +34,16 @@ func Infof(message string, args ...any) {
 	}
 }
 
+func Debugf(message string, args ...any) {
+	if logFile == nil {
+		return
+	}
+	_, err := fmt.Fprintf(logFile, "[DEBUG] "+message+"\n", args...)
+	if err != nil {
+		panic("Error writing to log file: " + err.Error())
+	}
+}
+
 func Errorf(message string, args ...any) {
 	if logFile == nil {
 		return

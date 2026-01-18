@@ -1,11 +1,10 @@
-package youtube
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"golang.org/x/oauth2"
@@ -27,10 +26,10 @@ func (c *Channel) Mask() {
 
 type Channels map[string]*Channel
 
-func GetChannelForToken(token *oauth2.Token) (*Channel, error) {
+func (c *Core) GetChannelForToken(token *oauth2.Token) (*Channel, error) {
 	ctx := context.Background()
 
-	service, err := Service(ctx, token)
+	service, err := c.Service(ctx, token)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create YouTube service: %w", err)
 	}
@@ -54,12 +53,12 @@ func GetChannelForToken(token *oauth2.Token) (*Channel, error) {
 	return channel, nil
 }
 
-func GetChannelByID(id string) (*Channel, error) {
+func (c *Core) GetChannelByID(id string) (*Channel, error) {
 	if id == "" {
 		return nil, fmt.Errorf("channel ID must be provided")
 	}
 
-	channels, err := ReadChannels(true)
+	channels, err := c.ReadChannels(true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read channels: %s", err.Error())
 	}
@@ -72,23 +71,19 @@ func GetChannelByID(id string) (*Channel, error) {
 	return channel, nil
 }
 
-func SaveChannel(channel *Channel) error {
+func (c *Core) SaveChannel(channel *Channel) error {
 	if channel == nil || channel.Token == nil {
 		return fmt.Errorf("invalid channel: channel or token is nil")
 	}
 
 	// First retrieve existing channels
-	channels, err := ReadChannels(true)
+	channels, err := c.ReadChannels(true)
 	if err != nil {
 		return fmt.Errorf("failed to read existing channels: %s", err.Error())
 	}
 	channels[channel.ID] = channel
 
-	current, err := user.Current()
-	if err != nil {
-		return fmt.Errorf("failed to get current user: %s", err.Error())
-	}
-	fChannelsPath := filepath.Join(current.HomeDir, fChannelsFileName)
+	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
 	// Open file or create it
 	file, err := os.OpenFile(fChannelsPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
@@ -104,12 +99,8 @@ func SaveChannel(channel *Channel) error {
 	return nil
 }
 
-func ReadChannels(ignoreError bool) (Channels, error) {
-	current, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %s", err.Error())
-	}
-	fChannelsPath := filepath.Join(current.HomeDir, fChannelsFileName)
+func (c *Core) ReadChannels(ignoreError bool) (Channels, error) {
+	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
 	file, err := os.Open(fChannelsPath)
 	if err != nil {
 		if os.IsNotExist(err) && ignoreError {

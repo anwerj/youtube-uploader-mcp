@@ -11,6 +11,7 @@ AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever s
 - OAuth2 authentication flow
 - Access token and refresh token management
 - Multi Channel Support
+- Schedule video uploads
 
 ## Single Command Installation
 
