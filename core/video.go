@@ -18,12 +18,18 @@ type Video struct {
 	CategoryID    string   `json:"category_id"`
 	PrivacyStatus string   `json:"privacy_status"`
 	MadeForKids   bool     `json:"made_for_kids"`
+	PublishAt     string   `json:"publish_at,omitempty"`
 }
 
 func (v *Video) toUpload() (*youtube.Video, error) {
 	privacy := "private"
 	if v.PrivacyStatus != "" {
 		privacy = v.PrivacyStatus
+	}
+
+	// If PublishAt is set, privacy status must be private
+	if v.PublishAt != "" {
+		privacy = "private"
 	}
 
 	upload := &youtube.Video{
@@ -36,6 +42,7 @@ func (v *Video) toUpload() (*youtube.Video, error) {
 		Status: &youtube.VideoStatus{
 			PrivacyStatus: privacy,
 			MadeForKids:   v.MadeForKids,
+			PublishAt:     v.PublishAt,
 		},
 	}
 

@@ -21,7 +21,7 @@ func Build(ctx context.Context, clientSecretFile string, workingDir string) (*se
 
 	s := server.NewMCPServer(
 		"Youtube Uploader MCP",
-		"1.0.0",
+		"0.1.2",
 		server.WithToolCapabilities(true),
 		server.WithHooks(hook.New().Define()),
 		server.WithLogging(),

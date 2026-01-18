@@ -48,6 +48,9 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 		mcp.WithString("status",
 			mcp.Description("status of video, could be any of unlisted, public, private. Default is private"),
 		),
+		mcp.WithString("publish_at",
+			mcp.Description("The date and time when the video is scheduled to publish. It can be set only if the privacy status of the video is private. The value is specified in ISO 8601 format (YYYY-MM-DDThh:mm:ss.sZ)."),
+		),
 		mcp.WithBoolean("made_for_kids",
 			mcp.Description("Whether the video is made exclusively for kids. Default is false"),
 		),
@@ -117,6 +120,7 @@ func (t *UploadVideoTool) Handle(
 		CategoryID:    categoryID,
 		PrivacyStatus: status,
 		MadeForKids:   madeForKids,
+		PublishAt:     request.GetString("publish_at", ""),
 	}
 	id, err := t.Core.UploadVideo(ctx, video, channel.Token)
 	if err != nil {
