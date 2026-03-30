@@ -14,6 +14,10 @@ AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever s
 - Multi Channel Support
 - Schedule video uploads
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/anwerj-youtube-uploader-mcp).
+
 ## Single Command Installation
 
 ### For Mac and Linux
