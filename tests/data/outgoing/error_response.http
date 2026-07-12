@@ -1,0 +1,16 @@
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+  "error": {
+    "code": 400,
+    "message": "API Error mock",
+    "errors": [
+      {
+        "message": "API Error mock",
+        "domain": "youtube",
+        "reason": "badRequest"
+      }
+    ]
+  }
+}

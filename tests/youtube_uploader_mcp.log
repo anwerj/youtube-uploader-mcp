@@ -1,0 +1,388 @@
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-11T23:38:44.108551+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-11T23:38:44.108551+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-11T23:38:44.108551+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"en","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"en","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-11T23:57:01.563425+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-11T23:57:01.563425+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-11T23:57:01.563425+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"en","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"en","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[DEBUG] Registering tool: update_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:19.783183+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:19.783183+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:19.783183+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"failed","thumbnail_status":"failed","errors":{"subtitles":"failed to insert subtitles: googleapi: Error 400: API Error mock, badRequest","thumbnail":"failed to set thumbnail: Post \"https://youtube.googleapis.com/upload/youtube/v3/thumbnails/set?alt=json\u0026prettyPrint=false\u0026uploadType=multipart\u0026videoId=video_id_12345\": no responder found"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"success","thumbnail_status":"failed","errors":{"thumbnail":"failed to set thumbnail: Post \"https://youtube.googleapis.com/upload/youtube/v3/thumbnails/set?alt=json\u0026prettyPrint=false\u0026uploadType=multipart\u0026videoId=video_id_12345\": no responder found"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"fr","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[DEBUG] Registering tool: update_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:32.040317+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:32.040317+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:32.040317+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"failed","thumbnail_status":"failed","errors":{"subtitles":"failed to insert subtitles: googleapi: Error 400: API Error mock, badRequest","thumbnail":"failed to set thumbnail: googleapi: Error 400: API Error mock, badRequest"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"success","thumbnail_status":"success"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"fr","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[DEBUG] Registering tool: update_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:53.061049+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:53.061049+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:13:53.061049+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"failed","thumbnail_status":"failed","errors":{"subtitles":"failed to insert subtitles: googleapi: Error 400: API Error mock, badRequest","thumbnail":"failed to set thumbnail: googleapi: Error 400: API Error mock, badRequest"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"success","thumbnail_status":"success"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:mock-status tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"fr","privacy_status":"mock-status","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[DEBUG] Registering tool: update_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:18:00.799329+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:18:00.799329+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:18:00.799329+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"failed","thumbnail_status":"failed","errors":{"subtitles":"failed to insert subtitles: googleapi: Error 400: API Error mock, badRequest","thumbnail":"failed to set thumbnail: googleapi: Error 400: API Error mock, badRequest"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"success","thumbnail_status":"success"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"unlisted","made_for_kids":false}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"fr","privacy_status":"unlisted","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[DEBUG] Registering tool: update_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:34:34.303496+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:34:34.303496+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:34:34.303496+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"failed","thumbnail_status":"failed","errors":{"subtitles":"failed to insert subtitles: googleapi: Error 400: API Error mock, badRequest","thumbnail":"failed to set thumbnail: googleapi: Error 400: API Error mock, badRequest"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"success","thumbnail_status":"success"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"unlisted","made_for_kids":false}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"fr","privacy_status":"unlisted","made_for_kids":false}}] false}
+
+[DEBUG] Registering tool: authenticate
+
+[DEBUG] Registering tool: accesstoken
+
+[DEBUG] Registering tool: channels
+
+[DEBUG] Registering tool: refreshtoken
+
+[DEBUG] Registering tool: upload_video
+
+[DEBUG] Registering tool: update_video
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {accesstoken map[code:mock-code] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:34:38.933897+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {authenticate <nil> <nil>}}, &{{map[]} [{{<nil>} text https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=1234567890-mockclientid.apps.googleusercontent.com&prompt=consent&redirect_uri=https%3A%2F%2Flocalhost%3A8080&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.upload+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.force-ssl+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&state=state-token}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {channels <nil> <nil>}}, &{{map[]} [{{<nil>} text {"mock-channel-id":{"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:34:38.933897+05:30","expires_in":3600}}}}] false}
+
+[INFO] beforeAny: initialize, 1, &{{initialize {<nil>}} { {map[] <nil> <nil>} { }}}
+
+[INFO] beforeAny: tools/list, 1, &{{{tools/list {<nil>}} {}}}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {refreshtoken map[channel_id:mock-channel-id] <nil>}}, &{{map[]} [{{<nil>} text {"id":"mock-channel-id","name":"mock-channel-title","customer_url":"","token":{"access_token":"***","token_type":"Bearer","refresh_token":"***","expiry":"2026-07-12T00:34:38.933897+05:30","expires_in":3600}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"failed","thumbnail_status":"failed","errors":{"subtitles":"failed to insert subtitles: googleapi: Error 400: API Error mock, badRequest","thumbnail":"failed to set thumbnail: googleapi: Error 400: API Error mock, badRequest"}}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {update_video map[channel_id:mock-channel-id playlist_id:playlist_id_12345 subtitle_language:en subtitle_path:./data/subtitles.srt thumbnail_path:./data/thumbnail.png video_id:video_id_12345] <nil>}}, &{{map[]} [{{<nil>} text {"video_id":"video_id_12345","playlist_status":"success","subtitles_status":"success","thumbnail_status":"success"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false publish_at:2026-01-20T12:00:00Z status:public tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"public","made_for_kids":false,"publish_at":"2026-01-20T12:00:00Z"}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"unlisted","made_for_kids":false}}] false}
+
+[INFO] beforeAny: tools/call, 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}
+
+[INFO] afterCallTool: 1, &{{tools/call {<nil>}} {upload_video map[category_id:mock-category-id channel_id:mock-channel-id description:mock-description file_path:./data/videos/video_1.mp4 made_for_kids:false status:unlisted tags:mock-tag1,mock-tag2 title:mock-title video_language:fr] <nil>}}, &{{map[]} [{{<nil>} text {"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"fr","privacy_status":"unlisted","made_for_kids":false}}] false}
+

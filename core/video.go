@@ -33,15 +33,19 @@ func (v *Video) toUpload() (*youtube.Video, error) {
 		privacy = "private"
 	}
 
+	snippet := &youtube.VideoSnippet{
+		Title:       v.Title,
+		Description: v.Description,
+		Tags:        v.Tags,
+		CategoryId:  v.CategoryID,
+	}
+	if v.Language != "" {
+		snippet.DefaultLanguage = v.Language
+		snippet.DefaultAudioLanguage = v.Language
+	}
+
 	upload := &youtube.Video{
-		Snippet: &youtube.VideoSnippet{
-			Title:              v.Title,
-			Description:        v.Description,
-			Tags:               v.Tags,
-			CategoryId:         v.CategoryID,
-			DefaultLanguage:    v.Language,
-			DefaultAudioLanguage: v.Language,
-		},
+		Snippet: snippet,
 		Status: &youtube.VideoStatus{
 			PrivacyStatus: privacy,
 			MadeForKids:   v.MadeForKids,

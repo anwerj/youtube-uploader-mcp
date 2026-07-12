@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "kind": "youtube#caption",
+  "id": "caption_id_12345",
+  "snippet": {
+    "videoId": "video_id_12345",
+    "language": "en",
+    "name": "Subtitles (en)"
+  }
+}

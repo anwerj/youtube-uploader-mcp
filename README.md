@@ -8,11 +8,13 @@
 AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever shared with LLMs or third‑party apps and all free of cost! It includes OAuth2 authentication, token management, and video upload functionality.
 
 ## Features
-- Upload videos to YouTube from MCP Client(Claude/Cursor/VS Code)
-- OAuth2 authentication flow
-- Access token and refresh token management
-- Multi Channel Support
-- Schedule video uploads
+
+* **Direct Uploads**: Upload videos to YouTube from Claude, Cursor, VS Code, or any other MCP client.
+* **AI-Assisted Metadata**: Automatically generate titles, descriptions, and tags via your MCP client.
+* **OAuth2 Authentication**: Secure local login, multi-channel support, and auto-refreshing.
+* **Metadata & Settings**: Category tags, optional language settings, and explicit metadata control.
+* **Privacy & Scheduling**: Support for public, private, or unlisted statuses, and scheduled publish times.
+* **Post-Upload Configs (`update_video`)**: Add videos to playlists, upload custom thumbnails (<2MB), and attach subtitles.
 
 ## Single Command Installation
 
@@ -81,11 +83,23 @@ To upload to YouTube, you must configure OAuth and get a client_secret.json file
 
 ➡️ Follow the guide in [youtube_oauth2_setup.md](./youtube_oauth2_setup.md) for a step-by-step walkthrough.
 
-Note: Subtitle upload (captions) requires the `https://www.googleapis.com/auth/youtube.force-ssl` scope. If you previously authenticated without it, delete your saved token and run `authenticate` again to generate a token with the new scope.
+> [!WARNING]
+> **Important: Sensitive OAuth Scope & Re-Authentication**:
+> Subtitle/caption upload relies on the `https://www.googleapis.com/auth/youtube.force-ssl` scope, which is required by the YouTube Data API to perform caption write operations. 
+> * **Existing Users**: If you authenticated with an older version of this MCP, your saved token will lack this scope. Any calls attempting to upload subtitles will fail with a `403 Forbidden` API error. 
+> * **How to Update**: You must delete the channel cache file (usually `.youtube_uploader_channels_cache` in your working directory) and rerun the `authenticate` tool to grant the new permissions.
+> * **Google Console Warning**: Adding this sensitive scope will trigger a warning screen in Google Cloud Console. Since this is for your personal use, you can safely proceed past the "unverified app" warnings.
 
-### Usage
+### Usage & Tool Orchestration
 
-- `main.go`: Entry point for the CLI
-- `youtube/`: YouTube API integration (OAuth, video upload, config)
-- `tool/`: Command-line tools for authentication, token, and upload
-- `hook/`, `logn/`: Supporting packages
+The MCP server registers the following tools:
+1. `authenticate`: Generates the OAuth2 URL for authentication.
+2. `accesstoken`: Exchanges the code for user credentials and channel info.
+3. `channels`: Retrieves authenticated channels.
+4. `refreshtoken`: Force-refreshes tokens.
+5. `upload_video`: Uploads the video file and configures main details (title, description, tags, category, optional language, status, kids' flags, scheduled publish).
+6. `update_video`: Decoupled tool that manages post-upload configurations: adds the video to a playlist, uploads a custom thumbnail (must be <2MB), and attaches subtitle/caption tracks.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) to contribute.

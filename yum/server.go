@@ -33,6 +33,7 @@ func Build(ctx context.Context, clientSecretFile string, workingDir string) (*se
 		&tool.GetChannelsTool{Core: c},
 		&tool.RefreshTokenTool{Core: c},
 		&tool.UploadVideoTool{Core: c},
+		&tool.UpdateVideoTool{Core: c},
 	}
 	for _, t := range tools {
 		logn.Debugf("Registering tool: %s\n", t.Name())

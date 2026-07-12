@@ -50,3 +50,17 @@ This step is necessary to get Google authenticating your application.
 1. After creating the OAuth client, you'll see a dialog with the **Client ID** and **Client Secret**.
 2. Click **Download JSON**.
 3. Save it to a known and safe location, for example: client_secret_***********.json
+
+---
+
+## ✅ Step 6: Handle Google "Unverified App" Warning & Resetting Cache
+
+### ⚠️ Google OAuth "Unverified App" Screen
+Because this MCP requests the sensitive scope `youtube.force-ssl` (required for editing captions/subtitles), Google will display a warning screen stating that **"Google hasn't verified this app"** when you open the authentication URL in your browser.
+* **This is normal and safe** for personal-use applications.
+* To bypass it: Click **Advanced** at the bottom of the screen, and then click **Go to YouTubeUploaderMCP (unsafe)** to proceed with granting scopes to your own developer app.
+
+### 🔄 Re-Authenticating Existing Tokens
+If you used an older version of this MCP and have already authenticated, your saved credentials will not have the `youtube.force-ssl` permission. 
+* To resolve `403 Forbidden` errors during subtitle upload, delete the cache file named `.youtube_uploader_channels_cache` in your configured `working_dir` (defaults to your user home directory).
+* Call the `authenticate` tool again to generate a new OAuth URL, open it in your browser, and authorize the new scope.

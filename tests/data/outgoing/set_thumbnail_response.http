@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "kind": "youtube#thumbnailSetResponse",
+  "items": [
+    {
+      "default": {
+        "url": "https://i.ytimg.com/vi/video_id_12345/default.jpg"
+      }
+    }
+  ]
+}

@@ -5,11 +5,15 @@ import (
 	"os"
 	"path/filepath"
 	"os/user"
+	"sync"
 )
 
 const logFileName = "youtube_uploader_mcp.log"
 
-var logFile *os.File
+var (
+	logFile *os.File
+	mu      sync.Mutex
+)
 
 func init() {
 	// Best-effort logging only. If we can't create a file (e.g. sandboxed
@@ -60,32 +64,28 @@ func tryOpenLogFile(dir string) *os.File {
 	return f
 }
 
-func Infof(message string, args ...any) {
+func writeLog(level string, message string, args ...any) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if logFile == nil {
 		return
 	}
-	_, err := fmt.Fprintf(logFile, "[INFO] "+message+"\n", args...)
+
+	_, err := fmt.Fprintf(logFile, "["+level+"] "+message+"\n", args...)
 	if err != nil {
-		panic("Error writing to log file: " + err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "Log error (fallback to Stderr): ["+level+"] "+message+"\n", args...)
 	}
+}
+
+func Infof(message string, args ...any) {
+	writeLog("INFO", message, args...)
 }
 
 func Debugf(message string, args ...any) {
-	if logFile == nil {
-		return
-	}
-	_, err := fmt.Fprintf(logFile, "[DEBUG] "+message+"\n", args...)
-	if err != nil {
-		panic("Error writing to log file: " + err.Error())
-	}
+	writeLog("DEBUG", message, args...)
 }
 
 func Errorf(message string, args ...any) {
-	if logFile == nil {
-		return
-	}
-	_, err := fmt.Fprintf(logFile, "[ERROR] "+message+"\n", args...)
-	if err != nil {
-		panic("Error writing to log file: " + err.Error())
-	}
+	writeLog("ERROR", message, args...)
 }

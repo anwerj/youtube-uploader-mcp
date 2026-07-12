@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "kind": "youtube#playlistItem",
+  "id": "playlist_item_id_12345",
+  "snippet": {
+    "playlistId": "playlist_id_12345",
+    "resourceId": {
+      "kind": "youtube#video",
+      "videoId": "video_id_12345"
+    }
+  }
+}

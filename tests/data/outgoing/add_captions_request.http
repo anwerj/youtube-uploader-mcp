@@ -1,0 +1,1 @@
+POST https://youtube.googleapis.com/upload/youtube/v3/captions?alt=json&part=snippet&prettyPrint=false&uploadType=multipart HTTP/1.1

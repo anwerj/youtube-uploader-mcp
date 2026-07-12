@@ -3,6 +3,7 @@ package tool
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"strings"
 	"time"
 
@@ -20,7 +21,7 @@ func (t *UploadVideoTool) Name() string {
 
 func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("Upload a video to YouTube, taking advantages of AI to generate descriptions, title and tags"),
+		mcp.WithDescription("Upload a video to YouTube, taking advantages of AI to generate descriptions, title and tags. To update a video with additional properties like playlist, subtitles, thumbnail, use the update_video tool."),
 		mcp.WithString("file_path",
 			mcp.Required(),
 			mcp.Description("Path to the video file"),
@@ -46,25 +47,13 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 			mcp.Description("Category ID for the video, if not provided, Agent should generate a category based on the video description"),
 		),
 		mcp.WithString("video_language",
-			mcp.Description("Language of the video's audio/content (ISO 639-1). Default is en (English)."),
+			mcp.Description("Optional language of the video's audio/content (ISO 639-1). If not set, YouTube's default or auto-detection is used."),
 		),
 		mcp.WithString("status",
 			mcp.Description("status of video, could be any of unlisted, public, private. Default is private"),
 		),
 		mcp.WithString("publish_at",
 			mcp.Description("The date and time when the video is scheduled to publish. It can be set only if the privacy status of the video is private. The value is specified in ISO 8601 format (YYYY-MM-DDThh:mm:ss.sZ)."),
-		),
-		mcp.WithString("playlist_id",
-			mcp.Description("Optional playlist ID to which the uploaded video should be added"),
-		),
-		mcp.WithString("subtitle_path",
-			mcp.Description("Optional path to a subtitle file (e.g., .srt or .vtt) to attach to the uploaded video"),
-		),
-		mcp.WithString("subtitle_language",
-			mcp.Description("Language code of the subtitle track (ISO 639-1). Default is en (English)."),
-		),
-		mcp.WithString("thumbnail_path",
-			mcp.Description("Optional path to an image file to use as the video's custom thumbnail"),
 		),
 		mcp.WithBoolean("made_for_kids",
 			mcp.Description("Whether the video is made exclusively for kids. Default is false"),
@@ -91,12 +80,23 @@ func (t *UploadVideoTool) Handle(
 		return mcp.NewToolResultError("channel_id is required to upload video"), nil
 	}
 	status := request.GetString("status", "private")
+	if status != "public" && status != "private" && status != "unlisted" {
+		return mcp.NewToolResultError("status must be one of: public, private, unlisted"), nil
+	}
 	madeForKids := request.GetBool("made_for_kids", false)
-	playlistID := request.GetString("playlist_id", "")
-	subtitlePath := request.GetString("subtitle_path", "")
-	subtitleLanguage := request.GetString("subtitle_language", "en")
-	videoLanguage := request.GetString("video_language", "en")
-	thumbnailPath := request.GetString("thumbnail_path", "")
+	videoLanguage := request.GetString("video_language", "")
+
+	// Fail-fast validation of the video file path
+	info, err := os.Stat(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return mcp.NewToolResultError("video file path does not exist: " + filePath), nil
+		}
+		return mcp.NewToolResultError("failed to check video file path: " + err.Error()), nil
+	}
+	if info.IsDir() {
+		return mcp.NewToolResultError("video file path is a directory: " + filePath), nil
+	}
 
 	channel, err := t.Core.GetChannelByID(channelId)
 	if err != nil {
@@ -148,24 +148,6 @@ func (t *UploadVideoTool) Handle(
 		return mcp.NewToolResultError("Failed to upload video: " + err.Error()), nil
 	}
 	video.ID = id
-
-	if playlistID != "" {
-		if err := t.Core.AddVideoToPlaylist(ctx, playlistID, id, channel.Token); err != nil {
-			return mcp.NewToolResultError("Failed to add video to playlist: " + err.Error()), nil
-		}
-	}
-
-	if subtitlePath != "" {
-		if err := t.Core.AddSubtitles(ctx, id, subtitlePath, subtitleLanguage, channel.Token); err != nil {
-			return mcp.NewToolResultError("Failed to add subtitles: " + err.Error()), nil
-		}
-	}
-
-	if thumbnailPath != "" {
-		if err := t.Core.SetThumbnail(ctx, id, thumbnailPath, channel.Token); err != nil {
-			return mcp.NewToolResultError("Failed to set thumbnail: " + err.Error()), nil
-		}
-	}
 
 	bytes, err := json.Marshal(video)
 	if err != nil {
