@@ -99,6 +99,7 @@ The MCP server registers the following tools:
 4. `refreshtoken`: Force-refreshes tokens.
 5. `upload_video`: Uploads the video file and configures main details (title, description, tags, category, optional language, status, kids' flags, scheduled publish).
 6. `update_video`: Decoupled tool that manages post-upload configurations: adds the video to a playlist, uploads a custom thumbnail (must be <2MB), and attaches subtitle/caption tracks.
+7. `list_videos`: Lists videos uploaded to a channel (public, unlisted, and private), with optional title/description search, privacy filter, and date ordering.
 
 ## Contributing
 

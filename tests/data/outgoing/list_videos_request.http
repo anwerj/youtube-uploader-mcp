@@ -1,0 +1,1 @@
+GET https://youtube.googleapis.com/youtube/v3/playlistItems?alt=json&maxResults=50&part=snippet&part=contentDetails&part=status&playlistId=UUmock-channel-id&prettyPrint=false HTTP/1.1

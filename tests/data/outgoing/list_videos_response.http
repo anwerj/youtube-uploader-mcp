@@ -1,0 +1,73 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"items": [
+		{
+			"snippet": {
+				"title": "Newest Public",
+				"description": "alpha public video",
+				"publishedAt": "2024-01-03T10:00:00Z",
+				"thumbnails": {
+					"default": {
+						"url": "https://example.com/thumb1.jpg"
+					}
+				},
+				"resourceId": {
+					"videoId": "video_public_1"
+				}
+			},
+			"contentDetails": {
+				"videoId": "video_public_1",
+				"videoPublishedAt": "2024-01-03T10:00:00Z"
+			},
+			"status": {
+				"privacyStatus": "public"
+			}
+		},
+		{
+			"snippet": {
+				"title": "Middle Unlisted",
+				"description": "beta unlisted",
+				"publishedAt": "2024-01-02T10:00:00Z",
+				"thumbnails": {
+					"default": {
+						"url": "https://example.com/thumb2.jpg"
+					}
+				},
+				"resourceId": {
+					"videoId": "video_unlisted_1"
+				}
+			},
+			"contentDetails": {
+				"videoId": "video_unlisted_1",
+				"videoPublishedAt": "2024-01-02T10:00:00Z"
+			},
+			"status": {
+				"privacyStatus": "unlisted"
+			}
+		},
+		{
+			"snippet": {
+				"title": "Oldest Private",
+				"description": "gamma private draft",
+				"publishedAt": "2024-01-01T10:00:00Z",
+				"thumbnails": {
+					"default": {
+						"url": "https://example.com/thumb3.jpg"
+					}
+				},
+				"resourceId": {
+					"videoId": "video_private_1"
+				}
+			},
+			"contentDetails": {
+				"videoId": "video_private_1",
+				"videoPublishedAt": "2024-01-01T10:00:00Z"
+			},
+			"status": {
+				"privacyStatus": "private"
+			}
+		}
+	]
+}

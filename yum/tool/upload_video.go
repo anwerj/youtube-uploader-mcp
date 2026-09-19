@@ -147,6 +147,7 @@ func (t *UploadVideoTool) Handle(
 	if err != nil {
 		return mcp.NewToolResultError("Failed to upload video: " + err.Error()), nil
 	}
+	t.Core.InvalidateVideoCatalog(channelId)
 	video.ID = id
 
 	bytes, err := json.Marshal(video)

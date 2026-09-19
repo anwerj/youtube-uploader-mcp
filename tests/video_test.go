@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -285,4 +286,95 @@ func (s *YumSuite) TestUpdateVideoPartialFailure() {
 	s.Contains(text.Text, `"subtitles_status":"failed"`)
 	s.Contains(text.Text, `"thumbnail_status":"failed"`)
 	s.Contains(text.Text, `"errors"`)
+}
+
+func (s *YumSuite) TestForbiddenListVideos() {
+	playlistAssert := func(req *http.Request) int {
+		s.Equal("GET", req.Method)
+		s.Equal("https://youtube.googleapis.com/youtube/v3/playlistItems?alt=json&maxResults=50&part=snippet&part=contentDetails&part=status&playlistId=UUmock-channel-id&prettyPrint=false", req.URL.String())
+		s.Equal("Bearer mock-access-token", req.Header.Get("Authorization"))
+		return 0
+	}
+
+	s.mock.Add("uploads_playlist_request", "uploads_playlist_response").Respond(nil)
+	s.mock.Add("list_videos_request", "forbidden_response").Respond(
+		httpmatter.RequestResponse(playlistAssert))
+	s.mock.Init()
+
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "list_videos",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, "authenticate")
+}
+
+func (s *YumSuite) TestListVideos() {
+	playlistAssert := func(req *http.Request) int {
+		s.Equal("GET", req.Method)
+		s.Equal("https://youtube.googleapis.com/youtube/v3/playlistItems?alt=json&maxResults=50&part=snippet&part=contentDetails&part=status&playlistId=UUmock-channel-id&prettyPrint=false", req.URL.String())
+		s.Equal("Bearer mock-access-token", req.Header.Get("Authorization"))
+		return 0
+	}
+
+	s.mock.Add("uploads_playlist_request", "uploads_playlist_response").Respond(nil)
+	s.mock.Add("list_videos_request", "list_videos_response").Respond(
+		httpmatter.RequestResponse(playlistAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "list_videos",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+
+	s.Contains(text.Text, `"video_private_1"`)
+	s.Contains(text.Text, `"privacy_status":"private"`)
+	s.True(strings.Index(text.Text, `"video_public_1"`) < strings.Index(text.Text, `"video_private_1"`))
+
+	ascText, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "list_videos",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+				"direction":  "asc",
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+	s.True(strings.Index(ascText.Text, `"video_private_1"`) < strings.Index(ascText.Text, `"video_public_1"`))
+
+	queryText, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "list_videos",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+				"query":      "private draft",
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+
+	var queryResult struct {
+		Videos       []map[string]string `json:"videos"`
+		TotalMatched int                 `json:"total_matched"`
+	}
+	s.NoError(json.Unmarshal([]byte(queryText.Text), &queryResult))
+	s.Equal(1, queryResult.TotalMatched)
+	s.Equal("video_private_1", queryResult.Videos[0]["id"])
 }

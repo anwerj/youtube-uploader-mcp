@@ -1,0 +1,16 @@
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{
+  "error": {
+    "code": 403,
+    "message": "Insufficient Permission",
+    "errors": [
+      {
+        "message": "Insufficient Permission",
+        "domain": "youtube",
+        "reason": "insufficientPermissions"
+      }
+    ]
+  }
+}
