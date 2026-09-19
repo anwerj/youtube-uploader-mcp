@@ -24,8 +24,7 @@ func (t *ListVideosTool) Name() string {
 
 func (t *ListVideosTool) Define(context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("List videos uploaded to a YouTube channel (public, unlisted, and private). "+
-			"Optional query filters title and description locally. Use offset and max to page results."),
+		mcp.WithDescription("List videos uploaded to a YouTube channel."),
 		mcp.WithString("channel_id",
 			mcp.Required(),
 			mcp.Description("Channel ID to list videos for. Call channels to list authenticated channels if needed."),

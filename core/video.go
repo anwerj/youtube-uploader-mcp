@@ -46,11 +46,11 @@ type ListVideosOptions struct {
 }
 
 type ListVideosResult struct {
-	Videos        []VideoSummary `json:"videos"`
-	TotalMatched  int            `json:"total_matched"`
-	Offset        int            `json:"offset"`
-	Max           int            `json:"max"`
-	Truncated     bool           `json:"truncated"`
+	Videos       []VideoSummary `json:"videos"`
+	TotalMatched int            `json:"total_matched"`
+	Offset       int            `json:"offset"`
+	Max          int            `json:"max"`
+	Truncated    bool           `json:"truncated"`
 }
 
 func (v *Video) toUpload() (*youtube.Video, error) {
@@ -78,9 +78,12 @@ func (v *Video) toUpload() (*youtube.Video, error) {
 	upload := &youtube.Video{
 		Snippet: snippet,
 		Status: &youtube.VideoStatus{
-			PrivacyStatus: privacy,
-			MadeForKids:   v.MadeForKids,
-			PublishAt:     v.PublishAt,
+			PrivacyStatus:           privacy,
+			SelfDeclaredMadeForKids: v.MadeForKids,
+			PublishAt:               v.PublishAt,
+			ForceSendFields: []string{
+				"SelfDeclaredMadeForKids",
+			},
 		},
 	}
 

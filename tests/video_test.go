@@ -41,10 +41,12 @@ func (s *YumSuite) TestUploadVideo() {
 				"categoryId": "mock-category-id"
 			},
 			"status": {
-				"privacyStatus": "unlisted"
+				"privacyStatus": "unlisted",
+				"selfDeclaredMadeForKids": false
 			}
 		}`
 		s.JSONEq(expectedJSON, string(b))
+		s.NotContains(string(b), "madeForKids")
 
 		// Part 2: Video Content
 		p2, err := mr.NextPart()
@@ -81,6 +83,55 @@ func (s *YumSuite) TestUploadVideo() {
 	s.Contains(text.Text, `{"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"unlisted","made_for_kids":false}`)
 }
 
+func (s *YumSuite) TestUploadVideoMadeForKidsTrue() {
+	reqAssert := func(req *http.Request) int {
+		_, params, err := mime.ParseMediaType(req.Header.Get("Content-Type"))
+		s.NoError(err)
+		mr := multipart.NewReader(req.Body, params["boundary"])
+		p1, err := mr.NextPart()
+		s.NoError(err)
+		b, err := io.ReadAll(p1)
+		s.NoError(err)
+
+		expectedJSON := `{
+			"snippet": {
+				"title": "mock-title",
+				"description": "mock-description",
+				"tags": ["mock-tag1"],
+				"categoryId": "mock-category-id"
+			},
+			"status": {
+				"privacyStatus": "private",
+				"selfDeclaredMadeForKids": true
+			}
+		}`
+		s.JSONEq(expectedJSON, string(b))
+		s.NotContains(string(b), "madeForKids")
+		return 0
+	}
+
+	s.mock.Add("upload_video_request", "upload_video_response").Respond(
+		httpmatter.RequestResponse(reqAssert))
+	s.mock.Init()
+
+	_, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "upload_video",
+			"arguments": mcp.Params{
+				"channel_id":    "mock-channel-id",
+				"file_path":     "./data/videos/video_1.mp4",
+				"description":   "mock-description",
+				"title":         "mock-title",
+				"tags":          "mock-tag1",
+				"category_id":   "mock-category-id",
+				"made_for_kids": true,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+}
+
 func (s *YumSuite) TestUploadVideoWithLanguage() {
 	reqAssert := func(req *http.Request) int {
 		s.Equal("POST", req.Method)
@@ -109,7 +160,8 @@ func (s *YumSuite) TestUploadVideoWithLanguage() {
 				"defaultAudioLanguage": "fr"
 			},
 			"status": {
-				"privacyStatus": "unlisted"
+				"privacyStatus": "unlisted",
+				"selfDeclaredMadeForKids": false
 			}
 		}`
 		s.JSONEq(expectedJSON, string(b))
@@ -171,7 +223,8 @@ func (s *YumSuite) TestUploadScheduledVideo() {
 			},
 			"status": {
 				"privacyStatus": "private",
-				"publishAt": "2026-01-20T12:00:00Z"
+				"publishAt": "2026-01-20T12:00:00Z",
+				"selfDeclaredMadeForKids": false
 			}
 		}`
 		s.JSONEq(expectedJSON, string(b))
