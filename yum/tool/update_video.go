@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/mark3labs/mcp-go/mcp"
+	"google.golang.org/api/youtube/v3"
 )
 
 type UpdateVideoTool struct {
@@ -21,7 +23,7 @@ func (t *UpdateVideoTool) Name() string {
 
 func (t *UpdateVideoTool) Define(context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("Configure or update an existing YouTube video's metadata (add to playlist, upload subtitles, upload custom thumbnail)"),
+		mcp.WithDescription("Configure or update an existing YouTube video's metadata (add to playlist, upload subtitles, upload custom thumbnail, schedule publish time)"),
 		mcp.WithString("channel_id",
 			mcp.Required(),
 			mcp.Description("Channel ID associated with the video"),
@@ -42,15 +44,43 @@ func (t *UpdateVideoTool) Define(context.Context) mcp.Tool {
 		mcp.WithString("thumbnail_path",
 			mcp.Description("Optional path to an image file to use as the video's custom thumbnail (max 2MB)"),
 		),
+		mcp.WithString("publish_at",
+			mcp.Description("Optional RFC3339 timestamp (e.g. 2026-09-20T18:00:00+05:30) to schedule "+
+				"an already-uploaded video for release. The video stays private until that time."),
+		),
+		mcp.WithBoolean("made_for_kids",
+			mcp.Description("Optional. Whether to mark the video as made for kids (updates status.selfDeclaredMadeForKids). Omit to leave the current setting unchanged."),
+		),
 	)
 }
 
 type UpdateVideoResult struct {
-	VideoID          string            `json:"video_id"`
-	PlaylistStatus   string            `json:"playlist_status,omitempty"`
-	SubtitlesStatus  string            `json:"subtitles_status,omitempty"`
-	ThumbnailStatus  string            `json:"thumbnail_status,omitempty"`
-	Errors           map[string]string `json:"errors,omitempty"`
+	VideoID           string            `json:"video_id"`
+	PlaylistStatus    string            `json:"playlist_status,omitempty"`
+	SubtitlesStatus   string            `json:"subtitles_status,omitempty"`
+	ThumbnailStatus   string            `json:"thumbnail_status,omitempty"`
+	ScheduleStatus    string            `json:"schedule_status,omitempty"`
+	MadeForKidsStatus string            `json:"made_for_kids_status,omitempty"`
+	Errors            map[string]string `json:"errors,omitempty"`
+}
+
+func boolArg(request mcp.CallToolRequest, key string) (*bool, error) {
+	val, ok := request.GetArguments()[key]
+	if !ok {
+		return nil, nil
+	}
+	switch v := val.(type) {
+	case bool:
+		return &v, nil
+	case string:
+		b, err := strconv.ParseBool(v)
+		if err != nil {
+			return nil, fmt.Errorf("%s must be a boolean", key)
+		}
+		return &b, nil
+	default:
+		return nil, fmt.Errorf("%s must be a boolean", key)
+	}
 }
 
 func (t *UpdateVideoTool) Handle(
@@ -67,9 +97,25 @@ func (t *UpdateVideoTool) Handle(
 	subtitlePath := request.GetString("subtitle_path", "")
 	subtitleLanguage := request.GetString("subtitle_language", "en")
 	thumbnailPath := request.GetString("thumbnail_path", "")
+	publishAt := request.GetString("publish_at", "")
+	madeForKids, err := boolArg(request, "made_for_kids")
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
 
-	if playlistID == "" && subtitlePath == "" && thumbnailPath == "" {
-		return mcp.NewToolResultError("at least one update parameter (playlist_id, subtitle_path, or thumbnail_path) must be provided"), nil
+	if playlistID == "" && subtitlePath == "" && thumbnailPath == "" && publishAt == "" && madeForKids == nil {
+		return mcp.NewToolResultError(
+			"at least one update parameter (playlist_id, subtitle_path, thumbnail_path, publish_at, or made_for_kids) must be provided"), nil
+	}
+
+	if publishAt != "" {
+		when, err := time.Parse(time.RFC3339, publishAt)
+		if err != nil {
+			return mcp.NewToolResultError("publish_at must be a valid RFC3339 timestamp: " + err.Error()), nil
+		}
+		if !when.After(time.Now()) {
+			return mcp.NewToolResultError("publish_at must be a future timestamp"), nil
+		}
 	}
 
 	// 1. Fail-fast validation of local files before authentication and API calls
@@ -131,7 +177,30 @@ func (t *UpdateVideoTool) Handle(
 		}
 	}
 
-	// 3. Process actions
+	// 3. Pre-flight: if scheduling and/or made_for_kids is requested, fetch the
+	// video and build the combined status once, before any mutating action
+	// runs, so an invalid request does not leave playlist/subtitle/thumbnail
+	// changes applied.
+	var newStatus *youtube.VideoStatus
+	if publishAt != "" || madeForKids != nil {
+		video, err := t.Core.GetVideo(ctx, videoId, channel.Token)
+		if err != nil {
+			return mcp.NewToolResultError("failed to verify video before updating status: " + err.Error()), nil
+		}
+		if video.Status == nil {
+			return mcp.NewToolResultError(fmt.Sprintf("video %s returned no status", videoId)), nil
+		}
+		opts := core.StatusUpdateOptions{MadeForKids: madeForKids}
+		if publishAt != "" {
+			opts.PublishAt = &publishAt
+		}
+		newStatus, err = core.BuildStatusUpdate(video.Status, opts)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+	}
+
+	// 4. Process actions
 	result := UpdateVideoResult{
 		VideoID: videoId,
 		Errors:  make(map[string]string),
@@ -164,6 +233,27 @@ func (t *UpdateVideoTool) Handle(
 		}
 	}
 
+	if publishAt != "" || madeForKids != nil {
+		if err := t.Core.UpdateVideoStatus(ctx, videoId, newStatus, channel.Token); err != nil {
+			if publishAt != "" {
+				result.ScheduleStatus = "failed"
+				result.Errors["schedule"] = err.Error()
+			}
+			if madeForKids != nil {
+				result.MadeForKidsStatus = "failed"
+				result.Errors["made_for_kids"] = err.Error()
+			}
+		} else {
+			if publishAt != "" {
+				result.ScheduleStatus = "success"
+			}
+			if madeForKids != nil {
+				result.MadeForKidsStatus = "success"
+			}
+			t.Core.InvalidateVideoCatalog(channelId)
+		}
+	}
+
 	if len(result.Errors) == 0 {
 		result.Errors = nil
 	}
@@ -192,6 +282,18 @@ func (t *UpdateVideoTool) Handle(
 	if thumbnailPath != "" {
 		requestedCount++
 		if result.ThumbnailStatus == "failed" {
+			failedCount++
+		}
+	}
+	if publishAt != "" {
+		requestedCount++
+		if result.ScheduleStatus == "failed" {
+			failedCount++
+		}
+	}
+	if madeForKids != nil {
+		requestedCount++
+		if result.MadeForKidsStatus == "failed" {
 			failedCount++
 		}
 	}

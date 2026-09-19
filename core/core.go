@@ -3,15 +3,29 @@ package core
 import (
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/youtube/v3"
 )
 
+const videoCatalogTTL = 60 * time.Second
+
+type videoCatalogEntry struct {
+	uploadsPlaylistID string
+	videos            []VideoSummary
+	fetchedAt         time.Time
+	truncated         bool
+}
+
 type Core struct {
 	config     *oauth2.Config
 	workingDir string
+
+	catalogMu sync.RWMutex
+	catalog   map[string]videoCatalogEntry
 }
 
 func NewCore(clientSecretFile string) *Core {

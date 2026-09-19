@@ -30,9 +30,16 @@ go build -o youtube-uploader-mcp .
 Or build for a specific platform using the [Makefile](Makefile):
 
 ```bash
+make dev            # current OS/arch only (fastest for local MCP testing)
 make darwin-arm64   # macOS Apple Silicon
 make linux-amd64    # Linux x86_64
 ```
+
+After rebuilding the binary, **restart the MCP server in Cursor** (Settings → MCP → disable/enable or Restart). Cursor keeps a long-lived stdio process keyed by the **server name** in `mcp.json`; rebuilding the binary does not replace that process. Changing the server entry name forces a fresh connection (same trick as a full restart).
+
+`make dev` stamps each build into `initialize` → `serverInfo.version` (e.g. `0.1.3+20250919133000`). Compare that to what Cursor shows for the server, or run `./youtube-uploader-mcp-darwin-arm64 -version`. A mismatch means Cursor is still on an old process.
+
+The server advertises `tools.listChanged` and sends `notifications/tools/list_changed` after `initialize` so clients that honor the MCP spec can refresh `tools/list` without a manual toggle. Cursor may still cache tools per server name until you restart or rename the entry—there is no API to force that from the server alone.
 
 ### Manual testing (optional)
 

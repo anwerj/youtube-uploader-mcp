@@ -1,0 +1,26 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"items": [
+		{
+			"id": "video_id_12345",
+			"snippet": {
+				"title": "Test video",
+				"description": "Test description"
+			},
+			"contentDetails": {
+				"duration": "PT5M30S"
+			},
+			"status": {
+				"privacyStatus": "private",
+				"uploadStatus": "processed",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": false,
+				"madeForKids": false
+			}
+		}
+	]
+}

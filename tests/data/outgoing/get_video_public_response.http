@@ -1,0 +1,25 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"items": [
+		{
+			"id": "video_id_12345",
+			"snippet": {
+				"title": "Public video",
+				"description": "Already published"
+			},
+			"contentDetails": {
+				"duration": "PT1M0S"
+			},
+			"status": {
+				"privacyStatus": "public",
+				"uploadStatus": "processed",
+				"license": "youtube",
+				"embeddable": true,
+				"publicStatsViewable": true,
+				"selfDeclaredMadeForKids": false
+			}
+		}
+	]
+}

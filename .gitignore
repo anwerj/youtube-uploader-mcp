@@ -1,5 +1,7 @@
 .vscode
 main
+youtube_uploader_mcp.log
 youtube-uploader-mcp*
 tests/data/tmp/*
 !tests/data/tmp/.gitkeep
+tests/youtube_uploader_mcp.log

@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"id": "video_id_12345",
+	"status": {
+		"privacyStatus": "private",
+		"publishAt": "2026-09-20T18:00:00+05:30",
+		"license": "creativeCommon",
+		"embeddable": false,
+		"publicStatsViewable": false,
+		"selfDeclaredMadeForKids": false
+	}
+}

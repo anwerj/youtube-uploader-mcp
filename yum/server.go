@@ -7,6 +7,7 @@ import (
 	"github.com/anwerj/youtube-uploader-mcp/hook"
 	"github.com/anwerj/youtube-uploader-mcp/logn"
 	"github.com/anwerj/youtube-uploader-mcp/yum/tool"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
@@ -19,13 +20,26 @@ func Build(ctx context.Context, clientSecretFile string, workingDir string) (*se
 		return nil, err
 	}
 
-	s := server.NewMCPServer(
+	var mcpServer *server.MCPServer
+	hooks := hook.New().Define()
+	// Nudge MCP clients that support tools.listChanged to re-fetch tools/list after connect.
+	hooks.AddAfterInitialize(func(ctx context.Context, _ any, _ *mcp.InitializeRequest, _ *mcp.InitializeResult) {
+		if mcpServer == nil {
+			return
+		}
+		if err := mcpServer.SendNotificationToClient(ctx, mcp.MethodNotificationToolsListChanged, nil); err != nil {
+			logn.Debugf("tools/list_changed notification: %v\n", err)
+		}
+	})
+
+	mcpServer = server.NewMCPServer(
 		"Youtube Uploader MCP",
-		"0.1.2",
+		Version,
 		server.WithToolCapabilities(true),
-		server.WithHooks(hook.New().Define()),
+		server.WithHooks(hooks),
 		server.WithLogging(),
 	)
+	s := mcpServer
 
 	tools := []Tool{
 		&tool.AuthenticateTool{Core: c},
@@ -34,6 +48,7 @@ func Build(ctx context.Context, clientSecretFile string, workingDir string) (*se
 		&tool.RefreshTokenTool{Core: c},
 		&tool.UploadVideoTool{Core: c},
 		&tool.UpdateVideoTool{Core: c},
+		&tool.ListVideosTool{Core: c},
 	}
 	for _, t := range tools {
 		logn.Debugf("Registering tool: %s\n", t.Name())
