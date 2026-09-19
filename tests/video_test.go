@@ -288,6 +288,219 @@ func (s *YumSuite) TestUpdateVideoPartialFailure() {
 	s.Contains(text.Text, `"errors"`)
 }
 
+func (s *YumSuite) TestUpdateVideoSchedule() {
+	scheduleAssert := func(req *http.Request) int {
+		s.Equal("PUT", req.Method)
+		s.Equal("https://youtube.googleapis.com/youtube/v3/videos?alt=json&part=status&prettyPrint=false", req.URL.String())
+		s.Equal("Bearer mock-access-token", req.Header.Get("Authorization"))
+
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		// Every mutable status field must be echoed back explicitly. YouTube
+		// deletes any mutable property the request omits, so the false booleans
+		// have to appear on the wire rather than being dropped by omitempty.
+		expectedJSON := `{
+			"id": "video_id_12345",
+			"status": {
+				"privacyStatus": "private",
+				"publishAt": "2026-09-20T18:00:00+05:30",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": false,
+				"containsSyntheticMedia": false
+			}
+		}`
+		s.JSONEq(expectedJSON, string(body))
+		// Read-only fields must never be sent back.
+		s.NotContains(string(body), "uploadStatus")
+		s.NotContains(string(body), "madeForKids\":")
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(scheduleAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+				"video_id":   "video_id_12345",
+				"publish_at": "2026-09-20T18:00:00+05:30",
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+
+	s.Contains(text.Text, `"video_id":"video_id_12345"`)
+	s.Contains(text.Text, `"schedule_status":"success"`)
+}
+
+func (s *YumSuite) TestUpdateVideoMadeForKids() {
+	madeForKidsAssert := func(req *http.Request) int {
+		s.Equal("PUT", req.Method)
+		s.Equal("https://youtube.googleapis.com/youtube/v3/videos?alt=json&part=status&prettyPrint=false", req.URL.String())
+
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		expectedJSON := `{
+			"id": "video_id_12345",
+			"status": {
+				"privacyStatus": "private",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": true,
+				"containsSyntheticMedia": false
+			}
+		}`
+		s.JSONEq(expectedJSON, string(body))
+		s.NotContains(string(body), "publishAt")
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(madeForKidsAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":     "mock-channel-id",
+				"video_id":       "video_id_12345",
+				"made_for_kids":  true,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+
+	s.Contains(text.Text, `"made_for_kids_status":"success"`)
+}
+
+func (s *YumSuite) TestUpdateVideoScheduleAndMadeForKids() {
+	getCount := 0
+	putCount := 0
+
+	getAssert := func(req *http.Request) int {
+		getCount++
+		s.Equal("GET", req.Method)
+		s.Contains(req.URL.String(), "youtube/v3/videos")
+		return 0
+	}
+	combinedAssert := func(req *http.Request) int {
+		putCount++
+		s.Equal("PUT", req.Method)
+
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		expectedJSON := `{
+			"id": "video_id_12345",
+			"status": {
+				"privacyStatus": "private",
+				"publishAt": "2026-09-20T18:00:00+05:30",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": true,
+				"containsSyntheticMedia": false
+			}
+		}`
+		s.JSONEq(expectedJSON, string(body))
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(httpmatter.RequestResponse(getAssert))
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(combinedAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":     "mock-channel-id",
+				"video_id":       "video_id_12345",
+				"publish_at":     "2026-09-20T18:00:00+05:30",
+				"made_for_kids":  true,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+
+	s.Equal(1, getCount)
+	s.Equal(1, putCount)
+	s.Contains(text.Text, `"schedule_status":"success"`)
+	s.Contains(text.Text, `"made_for_kids_status":"success"`)
+}
+
+func (s *YumSuite) TestUpdateVideoScheduleAbortsBeforeMutations() {
+	s.mock.Add("get_video_request", "get_video_public_response").Respond(nil)
+	s.mock.Init()
+
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":  "mock-channel-id",
+				"video_id":    "video_id_12345",
+				"playlist_id": "playlist_id_12345",
+				"publish_at":  "2099-01-01T12:00:00Z",
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, "already public")
+	s.NotContains(text.Text, `"playlist_status"`)
+}
+
+func (s *YumSuite) TestUpdateVideoScheduleInvalidPublishAt() {
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+				"video_id":   "video_id_12345",
+				"publish_at": "not-a-date",
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, "RFC3339")
+}
+
+func (s *YumSuite) TestUpdateVideoSchedulePastPublishAt() {
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id": "mock-channel-id",
+				"video_id":   "video_id_12345",
+				"publish_at": "2020-01-01T00:00:00Z",
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, "future timestamp")
+}
+
 func (s *YumSuite) TestForbiddenListVideos() {
 	playlistAssert := func(req *http.Request) int {
 		s.Equal("GET", req.Method)

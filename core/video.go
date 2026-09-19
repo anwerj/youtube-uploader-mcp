@@ -115,6 +115,111 @@ func (c *Core) UploadVideo(ctx context.Context, video *Video, token *oauth2.Toke
 	return resp.Id, nil
 }
 
+// GetVideo fetches a video's snippet, status, and contentDetails in a single
+// videos.list call. It performs no mutation.
+func (c *Core) GetVideo(ctx context.Context, videoID string, token *oauth2.Token) (*youtube.Video, error) {
+	if videoID == "" {
+		return nil, fmt.Errorf("video ID must be provided")
+	}
+	if token == nil {
+		return nil, fmt.Errorf("token must be provided")
+	}
+
+	service, err := c.Service(ctx, token)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create YouTube service: %w", err)
+	}
+
+	resp, err := service.Videos.List([]string{"snippet", "status", "contentDetails"}).Id(videoID).Do()
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch video: %w", err)
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("video %s not found", videoID)
+	}
+
+	return resp.Items[0], nil
+}
+
+// StatusUpdateOptions describes the mutable status fields a caller wants to
+// change. A nil pointer means "leave this field exactly as it currently is".
+type StatusUpdateOptions struct {
+	PublishAt   *string
+	MadeForKids *bool
+}
+
+// BuildStatusUpdate builds the full status object to send to videos.update,
+// applying whichever fields in opts are non-nil on top of current. It
+// performs no API call. videos.update replaces every mutable property in the
+// status part, and any property the request omits is deleted by YouTube, so
+// every existing mutable value from current is carried over and the booleans
+// are forced onto the wire, since Go's omitempty would otherwise drop the
+// false ones and let YouTube reset them to defaults.
+func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (*youtube.VideoStatus, error) {
+	if current == nil {
+		return nil, fmt.Errorf("current video status must be provided")
+	}
+
+	privacyStatus := current.PrivacyStatus
+	publishAt := current.PublishAt
+	selfDeclaredMadeForKids := current.SelfDeclaredMadeForKids
+
+	if opts.PublishAt != nil {
+		if current.PrivacyStatus == "public" {
+			return nil, fmt.Errorf("video is already public; scheduling would unpublish it")
+		}
+		privacyStatus = "private"
+		publishAt = *opts.PublishAt
+	}
+	if opts.MadeForKids != nil {
+		selfDeclaredMadeForKids = *opts.MadeForKids
+	}
+
+	return &youtube.VideoStatus{
+		PrivacyStatus:           privacyStatus,
+		PublishAt:               publishAt,
+		License:                 current.License,
+		Embeddable:              current.Embeddable,
+		PublicStatsViewable:     current.PublicStatsViewable,
+		SelfDeclaredMadeForKids: selfDeclaredMadeForKids,
+		ContainsSyntheticMedia:  current.ContainsSyntheticMedia,
+		ForceSendFields: []string{
+			"Embeddable",
+			"PublicStatsViewable",
+			"SelfDeclaredMadeForKids",
+			"ContainsSyntheticMedia",
+		},
+	}, nil
+}
+
+// UpdateVideoStatus writes a fully-built status object to an existing video.
+// It performs exactly one API call (videos.update) and does not fetch or
+// mutate the status itself; the caller is responsible for building a status
+// that carries forward any mutable fields it wants to preserve.
+func (c *Core) UpdateVideoStatus(ctx context.Context, videoID string, status *youtube.VideoStatus, token *oauth2.Token) error {
+	if videoID == "" {
+		return fmt.Errorf("video ID must be provided")
+	}
+	if status == nil {
+		return fmt.Errorf("status must be provided")
+	}
+	if token == nil {
+		return fmt.Errorf("token must be provided")
+	}
+
+	service, err := c.Service(ctx, token)
+	if err != nil {
+		return fmt.Errorf("failed to create YouTube service: %w", err)
+	}
+
+	update := &youtube.Video{Id: videoID, Status: status}
+	if _, err := service.Videos.Update([]string{"status"}, update).Do(); err != nil {
+		return fmt.Errorf("failed to update video status: %w", err)
+	}
+
+	return nil
+}
+
 func (c *Core) InvalidateVideoCatalog(channelID string) {
 	if channelID == "" {
 		return
