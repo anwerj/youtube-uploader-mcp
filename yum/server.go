@@ -6,6 +6,7 @@ import (
 	"github.com/anwerj/youtube-uploader-mcp/core"
 	"github.com/anwerj/youtube-uploader-mcp/hook"
 	"github.com/anwerj/youtube-uploader-mcp/logn"
+	"github.com/anwerj/youtube-uploader-mcp/tracker"
 	"github.com/anwerj/youtube-uploader-mcp/yum/tool"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -41,14 +42,17 @@ func Build(ctx context.Context, clientSecretFile string, workingDir string) (*se
 	)
 	s := mcpServer
 
+	tr := tracker.New()
+
 	tools := []Tool{
 		&tool.AuthenticateTool{Core: c},
 		&tool.AccessTokenTool{Core: c},
 		&tool.GetChannelsTool{Core: c},
 		&tool.RefreshTokenTool{Core: c},
-		&tool.UploadVideoTool{Core: c},
+		&tool.UploadVideoTool{Core: c, Tracker: tr},
 		&tool.UpdateVideoTool{Core: c},
 		&tool.ListVideosTool{Core: c},
+		&tool.VerifyUploadTool{Tracker: tr},
 	}
 	for _, t := range tools {
 		logn.Debugf("Registering tool: %s\n", t.Name())

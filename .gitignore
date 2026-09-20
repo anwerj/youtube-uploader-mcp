@@ -5,3 +5,6 @@ youtube-uploader-mcp*
 tests/data/tmp/*
 !tests/data/tmp/.gitkeep
 tests/youtube_uploader_mcp.log
+uat/*.mp4
+uat/*.jpg
+uat/*.png
