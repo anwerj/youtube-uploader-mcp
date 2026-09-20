@@ -2,9 +2,12 @@ package tracker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/mark3labs/mcp-go/mcp"
 )
 
 // Status is the lifecycle state of a tracked job.
@@ -16,166 +19,135 @@ const (
 	StatusFailed  Status = "failed"
 )
 
-// Job is a snapshot of tracked work for result type T.
-type Job[T any] struct {
-	Tool      string    `json:"tool"`
-	Status    Status    `json:"status"`
-	Result    T         `json:"-"`
-	Error     string    `json:"error,omitempty"`
-	Message   string    `json:"message,omitempty"`
-	StartedAt time.Time `json:"started_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-// RunKind describes how Run returned to the caller.
-type RunKind int
-
-const (
-	SyncSuccess  RunKind = 1
-	SyncError    RunKind = 2
-	AsyncRunning RunKind = 3
-	Duplicate    RunKind = 4
-)
-
-// RunOutcome is the immediate result of Run.
-type RunOutcome[T any] struct {
-	Kind   RunKind
-	Result T
-	Err    error
+// Job is a snapshot of tracked work. Result is only populated on success;
+// Error is only populated on failure.
+type Job struct {
+	Tool      string
+	Status    Status
+	Result    *mcp.CallToolResult
+	Error     string
+	StartedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Tracker holds in-memory job state. Only this package stores job results.
 type Tracker struct {
 	mu   sync.RWMutex
-	jobs map[string]*jobState
-}
-
-type jobState struct {
-	tool      string
-	status    Status
-	err       string
-	message   string
-	startedAt time.Time
-	updatedAt time.Time
-	result    interface{}
+	jobs map[string]*Job
 }
 
 // New returns an empty Tracker.
 func New() *Tracker {
 	return &Tracker{
-		jobs: make(map[string]*jobState),
+		jobs: make(map[string]*Job),
 	}
 }
 
-// Run executes fn in a goroutine. The caller must not start fn with go itself.
-// If fn finishes before earlyReturn, Run returns synchronously.
-// Otherwise Run returns AsyncRunning while fn continues until hardTimeout.
-func Run[T any](
-	t *Tracker,
-	toolName string,
-	jobKey string,
-	earlyReturn time.Duration,
-	hardTimeout time.Duration,
-	fn func(context.Context) (T, error),
-) RunOutcome[T] {
-	var zero T
-	if t == nil {
-		return RunOutcome[T]{Kind: SyncError, Err: fmt.Errorf("tracker is nil")}
-	}
+// MCPRunOptions configures a tracked MCP tool run: which tool is running,
+// which fields identify the job (used to derive the job key), and the
+// early-return/hard-timeout durations.
+type MCPRunOptions struct {
+	ToolName    string
+	KeyFields   map[string]string // used to derive the job key, sorted by field name
+	EarlyReturn time.Duration
+	HardTimeout time.Duration
+}
 
-	t.mu.Lock()
-	if existing, ok := t.jobs[jobKey]; ok && existing.status == StatusRunning {
-		t.mu.Unlock()
-		return RunOutcome[T]{Kind: Duplicate}
+// RunTool acts as an extension of a normal Tool.Handle: once control is
+// handed to the tracker, fn is fully responsible for producing its own
+// CallToolResult. The job key is computed internally from opts.KeyFields
+// (sorted by field name for determinism) and is only surfaced back to the
+// caller in the running/duplicate responses, so an agent can poll
+// check_job_status with it. A synchronous success returns fn's own
+// CallToolResult untouched.
+func RunTool(
+	tr *Tracker,
+	opts MCPRunOptions,
+	fn func(context.Context) (*mcp.CallToolResult, error),
+) (*mcp.CallToolResult, error) {
+	jobKey := BuildKeyFromFields(opts.KeyFields)
+
+	tr.mu.Lock()
+	if existing, ok := tr.jobs[jobKey]; ok && existing.Status == StatusRunning {
+		tr.mu.Unlock()
+		return runningResult(jobKey)
 	}
 	now := time.Now()
-	t.jobs[jobKey] = &jobState{
-		tool:      toolName,
-		status:    StatusRunning,
-		startedAt: now,
-		updatedAt: now,
+	tr.jobs[jobKey] = &Job{
+		Tool:      opts.ToolName,
+		Status:    StatusRunning,
+		StartedAt: now,
+		UpdatedAt: now,
 	}
-	t.mu.Unlock()
+	tr.mu.Unlock()
 
-	ctx, cancel := context.WithTimeout(context.Background(), hardTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), opts.HardTimeout)
 
 	type done struct {
-		value T
-		err   error
+		result *mcp.CallToolResult
+		err    error
 	}
 	ch := make(chan done, 1)
 
 	go func() {
 		defer cancel()
-		value, err := fn(ctx)
+		result, err := fn(ctx)
 		if ctx.Err() == context.DeadlineExceeded {
-			err = fmt.Errorf("operation still in progress after %v", hardTimeout)
+			err = fmt.Errorf("operation still in progress after %v", opts.HardTimeout)
 		}
-		ch <- done{value: value, err: err}
+		ch <- done{result: result, err: err}
 	}()
 
 	finish := func(d done) {
-		t.mu.Lock()
-		st := t.jobs[jobKey]
-		if st == nil {
-			t.mu.Unlock()
-			return
+		tr.mu.Lock()
+		job := tr.jobs[jobKey]
+		if job != nil {
+			job.UpdatedAt = time.Now()
+			if d.err != nil {
+				job.Status = StatusFailed
+				job.Error = d.err.Error()
+			} else {
+				job.Status = StatusSuccess
+				job.Result = d.result
+			}
 		}
-		st.updatedAt = time.Now()
-		if d.err != nil {
-			st.status = StatusFailed
-			st.err = d.err.Error()
-		} else {
-			st.status = StatusSuccess
-			st.result = d.value
-		}
-		t.mu.Unlock()
+		tr.mu.Unlock()
 	}
 
 	select {
 	case d := <-ch:
 		finish(d)
 		if d.err != nil {
-			return RunOutcome[T]{Kind: SyncError, Err: d.err}
+			return mcp.NewToolResultError(d.err.Error()), nil
 		}
-		return RunOutcome[T]{Kind: SyncSuccess, Result: d.value}
-	case <-time.After(earlyReturn):
+		return d.result, nil
+	case <-time.After(opts.EarlyReturn):
 		go func() {
-			d := <-ch
-			finish(d)
+			finish(<-ch)
 		}()
-		return RunOutcome[T]{Kind: AsyncRunning, Result: zero}
+		return runningResult(jobKey)
 	}
 }
 
-// Get returns the current job for jobKey and result type T.
-func Get[T any](t *Tracker, jobKey string) (Job[T], bool) {
-	var zero Job[T]
-	if t == nil {
-		return zero, false
+func runningResult(jobKey string) (*mcp.CallToolResult, error) {
+	body, err := json.Marshal(map[string]string{
+		"status":  "running",
+		"job_key": jobKey,
+		"message": "job is still running, please check in sometime with the same job_key",
+	})
+	if err != nil {
+		return mcp.NewToolResultError("failed to marshal pending status: " + err.Error()), nil
 	}
+	return mcp.NewToolResultText(string(body)), nil
+}
 
+// Get returns a snapshot of the job for jobKey.
+func Get(t *Tracker, jobKey string) (Job, bool) {
 	t.mu.RLock()
-	st, ok := t.jobs[jobKey]
-	t.mu.RUnlock()
+	defer t.mu.RUnlock()
+	job, ok := t.jobs[jobKey]
 	if !ok {
-		return zero, false
+		return Job{}, false
 	}
-
-	job := Job[T]{
-		Tool:      st.tool,
-		Status:    st.status,
-		Error:     st.err,
-		Message:   st.message,
-		StartedAt: st.startedAt,
-		UpdatedAt: st.updatedAt,
-	}
-	if st.status == StatusSuccess && st.result != nil {
-		v, ok := st.result.(T)
-		if !ok {
-			return zero, false
-		}
-		job.Result = v
-	}
-	return job, true
+	return *job, true
 }

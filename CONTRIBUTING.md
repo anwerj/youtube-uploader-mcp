@@ -53,7 +53,7 @@ To run the server locally against real YouTube APIs, you need a Google OAuth `cl
 
 ### MCP UAT (agent runbook)
 
-For a repeatable agent-driven end-to-end **user acceptance** run against real YouTube (OAuth, uploads, `list_videos`, `update_video`, `verify_upload`), see **[uat/MCP_UAT.md](uat/MCP_UAT.md)**. Fixtures live in `uat/` (`uat_*.mp4` gitignored; runbook and `.srt` tracked).
+For a repeatable agent-driven end-to-end **user acceptance** run against real YouTube (OAuth, uploads, `list_videos`, `update_video`, `check_job_status`), see **[uat/MCP_UAT.md](uat/MCP_UAT.md)**. Fixtures live in `uat/` (`uat_*.mp4` gitignored; runbook and `.srt` tracked).
 
 ## Project Layout
 
@@ -94,7 +94,7 @@ type Tool interface {
    - **Handle**: Extract arguments, validate inputs, call `core/` functions, return results via `mcp.NewToolResultText` or `mcp.NewToolResultError`.
 
 3. **Registration** — Add the tool to the `tools` slice in [yum/server.go](yum/server.go).
-4. **Tests** — Add tests in [tests/](tests/) using the `YumSuite` pattern ([tests/suite_test.go](tests/suite_test.go)):
+4. **Tests** — Add tests in [tests/](tests/) using the `YumSuite` pattern ([tests/suite_test.go](tests/suite_test.go)). Do **not** add `_test.go` files inside [yum/tool/](yum/tool/) — tool behavior is verified through full integration tests in `tests/`, not unit tests colocated with the handler:
    - Add paired request/response fixtures under [tests/data/outgoing/](tests/data/outgoing/) (`*_request.http` / `*_response.http`).
    - Assert outgoing HTTP in test callbacks (see [tests/video_test.go](tests/video_test.go)).
    - Update [tests/mcp_test.go](tests/mcp_test.go) if the tool count or names change.
@@ -106,6 +106,7 @@ type Tool interface {
 - **`core/` = domains** — `core/` contents are resources and can be considered domains; each file represents a domain.
 - **`yum/tool/` = tools only** — `yum/tool/` is only for tools; each file represents a tool.
 - **Addon requirements** — Must sit in their own separate module (e.g. `logn`, `tracker`, `hook`), not mixed into `core/` or `yum/tool/`.
+- **Testing philosophy** — Unit testing is verbose and largely avoided in this project; rely on full integration tests in `tests/` (`YumSuite` + `httpmatter`) instead. `yum/tool/` stays tools-only, including test files — no `_test.go` files there. Package-internal unit tests are acceptable for standalone modules bounded to their own package (e.g. `tracker/key_test.go`), since they don't compete with the tools-only rule.
 - **Errors** — Return user-facing errors via `mcp.NewToolResultError`. Wrap internal errors with `fmt.Errorf("...: %w", err)`.
 - **Logging** — Use the `logn` package; keep tool output clean for LLM consumers.
 - **Tool schemas** — Write clear `mcp.WithDescription` text so AI agents understand when and how to call each tool (see [yum/tool/upload_video.go](yum/tool/upload_video.go)).

@@ -52,7 +52,7 @@ func Build(ctx context.Context, clientSecretFile string, workingDir string) (*se
 		&tool.UploadVideoTool{Core: c, Tracker: tr},
 		&tool.UpdateVideoTool{Core: c},
 		&tool.ListVideosTool{Core: c},
-		&tool.VerifyUploadTool{Tracker: tr},
+		&tool.CheckJobStatusTool{Tracker: tr},
 	}
 	for _, t := range tools {
 		logn.Debugf("Registering tool: %s\n", t.Name())
