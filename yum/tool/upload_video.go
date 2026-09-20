@@ -148,28 +148,25 @@ func (t *UploadVideoTool) Handle(
 		PublishAt:     request.GetString("publish_at", ""),
 	}
 
-	jobKey := tracker.UploadJobKey(channelId, filePath)
 	token := channel.Token
 
-	return tracker.RunTool(t.Tracker, t.Name(), jobKey, uploadEarlyReturn, uploadHardTimeout,
-		func(ctx context.Context) (core.Video, error) {
-			id, err := t.Core.UploadVideo(ctx, &video, token)
-			if err != nil {
-				return core.Video{}, err
-			}
-			t.Core.InvalidateVideoCatalog(channelId)
-			video.ID = id
-			return video, nil
-		},
-		func(v core.Video) ([]byte, error) { return json.Marshal(v) },
-		tracker.MCPRunOptions{
-			DuplicateError: "an upload for this channel_id and file_path is already in progress; use verify_upload to check status",
-			RunningMessage: "Upload is continuing in the background. Call verify_upload with the same channel_id and file_path until status is success or failed.",
-			PendingFields: map[string]string{
-				"channel_id": channelId,
-				"file_path":  filePath,
-				"job_id":     jobKey,
-			},
-		},
-	)
+	opts := tracker.MCPRunOptions{
+		ToolName:    t.Name(),
+		KeyFields:   map[string]string{"channel_id": channelId, "file_path": filePath},
+		EarlyReturn: uploadEarlyReturn,
+		HardTimeout: uploadHardTimeout,
+	}
+	return tracker.RunTool(t.Tracker, opts, func(ctx context.Context) (*mcp.CallToolResult, error) {
+		id, err := t.Core.UploadVideo(ctx, &video, token)
+		if err != nil {
+			return mcp.NewToolResultError("failed to upload video: " + err.Error()), nil
+		}
+		t.Core.InvalidateVideoCatalog(channelId)
+		video.ID = id
+		bytes, err := json.Marshal(video)
+		if err != nil {
+			return mcp.NewToolResultError("failed to marshal video: " + err.Error()), nil
+		}
+		return mcp.NewToolResultText(string(bytes)), nil
+	})
 }

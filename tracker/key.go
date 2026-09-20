@@ -3,6 +3,7 @@ package tracker
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"sort"
 )
 
 // JobKey returns a stable hash for tracker map lookups from one or more parts.
@@ -18,7 +19,19 @@ func JobKey(parts ...string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// UploadJobKey is JobKey(channelID, filePath) for upload_video / verify_upload.
-func UploadJobKey(channelID, filePath string) string {
-	return JobKey(channelID, filePath)
+// BuildKeyFromFields derives a stable job key from a set of named fields.
+// Field names are sorted before hashing so the resulting key is deterministic
+// regardless of Go's randomized map iteration order.
+func BuildKeyFromFields(fields map[string]string) string {
+	names := make([]string, 0, len(fields))
+	for k := range fields {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+
+	parts := make([]string, 0, len(names)*2)
+	for _, k := range names {
+		parts = append(parts, k, fields[k])
+	}
+	return JobKey(parts...)
 }

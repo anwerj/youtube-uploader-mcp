@@ -34,5 +34,5 @@ func (s *YumSuite) TestListTools() {
 		toolsName = append(toolsName, tool.Name)
 	}
 
-	s.Equal([]string{"accesstoken", "authenticate", "channels", "list_videos", "refreshtoken", "update_video", "upload_video", "verify_upload"}, toolsName)
+	s.Equal([]string{"accesstoken", "authenticate", "channels", "check_job_status", "list_videos", "refreshtoken", "update_video", "upload_video"}, toolsName)
 }
