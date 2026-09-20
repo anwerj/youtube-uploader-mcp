@@ -8,11 +8,18 @@ import (
 	"time"
 
 	"github.com/anwerj/youtube-uploader-mcp/core"
+	"github.com/anwerj/youtube-uploader-mcp/tracker"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
+const (
+	uploadEarlyReturn = 30 * time.Second
+	uploadHardTimeout = 10 * time.Minute
+)
+
 type UploadVideoTool struct {
-	Core *core.Core
+	Core    *core.Core
+	Tracker *tracker.Tracker
 }
 
 func (t *UploadVideoTool) Name() string {
@@ -21,7 +28,7 @@ func (t *UploadVideoTool) Name() string {
 
 func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("Upload a video to YouTube, taking advantages of AI to generate descriptions, title and tags. To update a video with additional properties like playlist, subtitles, thumbnail, use the update_video tool."),
+		mcp.WithDescription("Upload a video to YouTube. "),
 		mcp.WithString("file_path",
 			mcp.Required(),
 			mcp.Description("Path to the video file"),
@@ -86,7 +93,6 @@ func (t *UploadVideoTool) Handle(
 	madeForKids := request.GetBool("made_for_kids", false)
 	videoLanguage := request.GetString("video_language", "")
 
-	// Fail-fast validation of the video file path
 	info, err := os.Stat(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -115,7 +121,6 @@ func (t *UploadVideoTool) Handle(
 			"channel token is expired or malformed, please start authenticate"), nil
 	}
 
-	// Check if token is expiring (within 2 minutes)
 	now := time.Now().In(channel.Token.Expiry.Location())
 	if channel.Token.Expiry.Before(now.Add(2 * time.Minute)) {
 		newToken, err := t.Core.RefreshAccessToken(channel.Token)
@@ -124,7 +129,6 @@ func (t *UploadVideoTool) Handle(
 				"token was expiring, Failed to refresh token: " + err.Error()), nil
 		}
 		channel.Token = newToken
-		// Optionally save the refreshed token for future use
 		err = t.Core.SaveChannel(channel)
 		if err != nil {
 			return mcp.NewToolResultError(
@@ -132,7 +136,7 @@ func (t *UploadVideoTool) Handle(
 		}
 	}
 
-	video := &core.Video{
+	video := core.Video{
 		Path:          filePath,
 		Title:         title,
 		Description:   description,
@@ -143,17 +147,29 @@ func (t *UploadVideoTool) Handle(
 		MadeForKids:   madeForKids,
 		PublishAt:     request.GetString("publish_at", ""),
 	}
-	id, err := t.Core.UploadVideo(ctx, video, channel.Token)
-	if err != nil {
-		return mcp.NewToolResultError("Failed to upload video: " + err.Error()), nil
-	}
-	t.Core.InvalidateVideoCatalog(channelId)
-	video.ID = id
 
-	bytes, err := json.Marshal(video)
-	if err != nil {
-		return mcp.NewToolResultError("failed to marshal the video: " + err.Error()), nil
-	}
+	jobKey := tracker.UploadJobKey(channelId, filePath)
+	token := channel.Token
 
-	return mcp.NewToolResultText(string(bytes)), nil
+	return tracker.RunTool(t.Tracker, t.Name(), jobKey, uploadEarlyReturn, uploadHardTimeout,
+		func(ctx context.Context) (core.Video, error) {
+			id, err := t.Core.UploadVideo(ctx, &video, token)
+			if err != nil {
+				return core.Video{}, err
+			}
+			t.Core.InvalidateVideoCatalog(channelId)
+			video.ID = id
+			return video, nil
+		},
+		func(v core.Video) ([]byte, error) { return json.Marshal(v) },
+		tracker.MCPRunOptions{
+			DuplicateError: "an upload for this channel_id and file_path is already in progress; use verify_upload to check status",
+			RunningMessage: "Upload is continuing in the background. Call verify_upload with the same channel_id and file_path until status is success or failed.",
+			PendingFields: map[string]string{
+				"channel_id": channelId,
+				"file_path":  filePath,
+				"job_id":     jobKey,
+			},
+		},
+	)
 }

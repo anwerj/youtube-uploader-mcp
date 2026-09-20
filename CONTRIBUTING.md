@@ -51,6 +51,10 @@ To run the server locally against real YouTube APIs, you need a Google OAuth `cl
 
 **Never commit** real `client_secret.json` files, OAuth tokens, channel cache files, or personal logs.
 
+### MCP UAT (agent runbook)
+
+For a repeatable agent-driven end-to-end **user acceptance** run against real YouTube (OAuth, uploads, `list_videos`, `update_video`, `verify_upload`), see **[uat/MCP_UAT.md](uat/MCP_UAT.md)**. Fixtures live in `uat/` (`uat_*.mp4` gitignored; runbook and `.srt` tracked).
+
 ## Project Layout
 
 ```mermaid
@@ -99,6 +103,9 @@ type Tool interface {
 ## Code Conventions
 
 - **Separation of concerns** — Business logic lives in `core/`, not in tool handlers.
+- **`core/` = domains** — `core/` contents are resources and can be considered domains; each file represents a domain.
+- **`yum/tool/` = tools only** — `yum/tool/` is only for tools; each file represents a tool.
+- **Addon requirements** — Must sit in their own separate module (e.g. `logn`, `tracker`, `hook`), not mixed into `core/` or `yum/tool/`.
 - **Errors** — Return user-facing errors via `mcp.NewToolResultError`. Wrap internal errors with `fmt.Errorf("...: %w", err)`.
 - **Logging** — Use the `logn` package; keep tool output clean for LLM consumers.
 - **Tool schemas** — Write clear `mcp.WithDescription` text so AI agents understand when and how to call each tool (see [yum/tool/upload_video.go](yum/tool/upload_video.go)).
@@ -136,9 +143,10 @@ Pushing a tag matching `v*` triggers a multi-platform binary release via [.githu
 
 If you are an AI agent contributing to this repository:
 
-1. **Read this file first.** Do not use outdated path names (`tool/` → `yum/tool/`, `youtube/` → `core/`).
-2. **Key files:** [yum/server.go](yum/server.go), [yum/tool.go](yum/tool.go), [core/](core/), [tests/suite_test.go](tests/suite_test.go).
-3. **Checklist:**
+1. **Read [CONSTITUTION.md](CONSTITUTION.md) first.** It contains non-negotiable product principles. If a requested change conflicts with any item there, stop and flag it — do not implement a workaround or silently violate it.
+2. **Read this file next.** Do not use outdated path names (`tool/` → `yum/tool/`, `youtube/` → `core/`).
+3. **Key files:** [yum/server.go](yum/server.go), [yum/tool.go](yum/tool.go), [core/](core/), [tests/suite_test.go](tests/suite_test.go).
+4. **Checklist:**
    - Match existing patterns in neighboring tools and tests
    - Add `httpmatter` tests for any new API calls
    - Run `go test -v ./...` before finishing
