@@ -24,6 +24,12 @@ type Core struct {
 	config     *oauth2.Config
 	workingDir string
 
+	// redirectURIMu guards redirectURI, the redirect URI used by the most
+	// recent AuthURL call. The authorization code exchange must send the very
+	// same redirect_uri or Google answers invalid_grant.
+	redirectURIMu sync.Mutex
+	redirectURI   string
+
 	catalogMu sync.RWMutex
 	catalog   map[string]videoCatalogEntry
 }
