@@ -147,8 +147,10 @@ func (c *Core) GetVideo(ctx context.Context, videoID string, token *oauth2.Token
 // StatusUpdateOptions describes the mutable status fields a caller wants to
 // change. A nil pointer means "leave this field exactly as it currently is".
 type StatusUpdateOptions struct {
-	PublishAt   *string
-	MadeForKids *bool
+	PublishAt              *string
+	MadeForKids            *bool
+	PrivacyStatus          *string
+	ContainsSyntheticMedia *bool
 }
 
 // BuildStatusUpdate builds the full status object to send to videos.update,
@@ -166,16 +168,38 @@ func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (
 	privacyStatus := current.PrivacyStatus
 	publishAt := current.PublishAt
 	selfDeclaredMadeForKids := current.SelfDeclaredMadeForKids
+	containsSyntheticMedia := current.ContainsSyntheticMedia
+
+	if opts.PrivacyStatus != nil {
+		switch *opts.PrivacyStatus {
+		case "public", "unlisted", "private":
+			privacyStatus = *opts.PrivacyStatus
+		default:
+			return nil, fmt.Errorf(
+				"privacy_status must be one of public, unlisted, private (got %q)", *opts.PrivacyStatus)
+		}
+	}
 
 	if opts.PublishAt != nil {
 		if current.PrivacyStatus == "public" {
 			return nil, fmt.Errorf("video is already public; scheduling would unpublish it")
+		}
+		if opts.PrivacyStatus != nil && *opts.PrivacyStatus != "private" {
+			return nil, fmt.Errorf("publish_at requires privacy_status private")
 		}
 		privacyStatus = "private"
 		publishAt = *opts.PublishAt
 	}
 	if opts.MadeForKids != nil {
 		selfDeclaredMadeForKids = *opts.MadeForKids
+	}
+	if opts.ContainsSyntheticMedia != nil {
+		containsSyntheticMedia = *opts.ContainsSyntheticMedia
+	}
+
+	// A publish time is only valid on a private video; any other visibility drops it.
+	if privacyStatus != "private" {
+		publishAt = ""
 	}
 
 	return &youtube.VideoStatus{
@@ -185,7 +209,7 @@ func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (
 		Embeddable:              current.Embeddable,
 		PublicStatsViewable:     current.PublicStatsViewable,
 		SelfDeclaredMadeForKids: selfDeclaredMadeForKids,
-		ContainsSyntheticMedia:  current.ContainsSyntheticMedia,
+		ContainsSyntheticMedia:  containsSyntheticMedia,
 		ForceSendFields: []string{
 			"Embeddable",
 			"PublicStatsViewable",

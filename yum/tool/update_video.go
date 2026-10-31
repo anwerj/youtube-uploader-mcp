@@ -48,6 +48,15 @@ func (t *UpdateVideoTool) Define(context.Context) mcp.Tool {
 			mcp.Description("Optional RFC3339 timestamp (e.g. 2026-09-20T18:00:00+05:30) to schedule "+
 				"an already-uploaded video for release. The video stays private until that time."),
 		),
+		mcp.WithString("privacy_status",
+			mcp.Description("Optional. Visibility of the video: public, unlisted or private. "+
+				"Omit to leave the current visibility unchanged."),
+		),
+		mcp.WithBoolean("contains_synthetic_media",
+			mcp.Description("Optional. Sets YouTube's \"altered or synthetic content\" disclosure, "+
+				"required when the video contains AI-generated voices or visuals. "+
+				"Omit to leave the current setting unchanged."),
+		),
 		mcp.WithBoolean("made_for_kids",
 			mcp.Description("Optional. Whether to mark the video as made for kids (updates status.selfDeclaredMadeForKids). Omit to leave the current setting unchanged."),
 		),
@@ -61,6 +70,8 @@ type UpdateVideoResult struct {
 	ThumbnailStatus   string            `json:"thumbnail_status,omitempty"`
 	ScheduleStatus    string            `json:"schedule_status,omitempty"`
 	MadeForKidsStatus string            `json:"made_for_kids_status,omitempty"`
+	PrivacyStatus     string            `json:"privacy_status,omitempty"`
+	SyntheticStatus   string            `json:"synthetic_media_status,omitempty"`
 	Errors            map[string]string `json:"errors,omitempty"`
 }
 
@@ -102,10 +113,26 @@ func (t *UpdateVideoTool) Handle(
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
 	}
+	containsSynthetic, err := boolArg(request, "contains_synthetic_media")
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
 
-	if playlistID == "" && subtitlePath == "" && thumbnailPath == "" && publishAt == "" && madeForKids == nil {
+	privacyStatus := request.GetString("privacy_status", "")
+	switch privacyStatus {
+	case "", "public", "unlisted", "private":
+	default:
 		return mcp.NewToolResultError(
-			"at least one update parameter (playlist_id, subtitle_path, thumbnail_path, publish_at, or made_for_kids) must be provided"), nil
+			"privacy_status must be one of public, unlisted, private"), nil
+	}
+
+	statusChange := publishAt != "" || madeForKids != nil ||
+		privacyStatus != "" || containsSynthetic != nil
+
+	if playlistID == "" && subtitlePath == "" && thumbnailPath == "" && !statusChange {
+		return mcp.NewToolResultError(
+			"at least one update parameter (playlist_id, subtitle_path, thumbnail_path, publish_at, " +
+				"privacy_status, contains_synthetic_media, or made_for_kids) must be provided"), nil
 	}
 
 	if publishAt != "" {
@@ -182,7 +209,7 @@ func (t *UpdateVideoTool) Handle(
 	// runs, so an invalid request does not leave playlist/subtitle/thumbnail
 	// changes applied.
 	var newStatus *youtube.VideoStatus
-	if publishAt != "" || madeForKids != nil {
+	if statusChange {
 		video, err := t.Core.GetVideo(ctx, videoId, channel.Token)
 		if err != nil {
 			return mcp.NewToolResultError("failed to verify video before updating status: " + err.Error()), nil
@@ -190,9 +217,15 @@ func (t *UpdateVideoTool) Handle(
 		if video.Status == nil {
 			return mcp.NewToolResultError(fmt.Sprintf("video %s returned no status", videoId)), nil
 		}
-		opts := core.StatusUpdateOptions{MadeForKids: madeForKids}
+		opts := core.StatusUpdateOptions{
+			MadeForKids:            madeForKids,
+			ContainsSyntheticMedia: containsSynthetic,
+		}
 		if publishAt != "" {
 			opts.PublishAt = &publishAt
+		}
+		if privacyStatus != "" {
+			opts.PrivacyStatus = &privacyStatus
 		}
 		newStatus, err = core.BuildStatusUpdate(video.Status, opts)
 		if err != nil {
@@ -233,7 +266,7 @@ func (t *UpdateVideoTool) Handle(
 		}
 	}
 
-	if publishAt != "" || madeForKids != nil {
+	if statusChange {
 		if err := t.Core.UpdateVideoStatus(ctx, videoId, newStatus, channel.Token); err != nil {
 			if publishAt != "" {
 				result.ScheduleStatus = "failed"
@@ -243,12 +276,26 @@ func (t *UpdateVideoTool) Handle(
 				result.MadeForKidsStatus = "failed"
 				result.Errors["made_for_kids"] = err.Error()
 			}
+			if privacyStatus != "" {
+				result.PrivacyStatus = "failed"
+				result.Errors["privacy_status"] = err.Error()
+			}
+			if containsSynthetic != nil {
+				result.SyntheticStatus = "failed"
+				result.Errors["contains_synthetic_media"] = err.Error()
+			}
 		} else {
 			if publishAt != "" {
 				result.ScheduleStatus = "success"
 			}
 			if madeForKids != nil {
 				result.MadeForKidsStatus = "success"
+			}
+			if privacyStatus != "" {
+				result.PrivacyStatus = "success"
+			}
+			if containsSynthetic != nil {
+				result.SyntheticStatus = "success"
 			}
 			t.Core.InvalidateVideoCatalog(channelId)
 		}
@@ -294,6 +341,18 @@ func (t *UpdateVideoTool) Handle(
 	if madeForKids != nil {
 		requestedCount++
 		if result.MadeForKidsStatus == "failed" {
+			failedCount++
+		}
+	}
+	if privacyStatus != "" {
+		requestedCount++
+		if result.PrivacyStatus == "failed" {
+			failedCount++
+		}
+	}
+	if containsSynthetic != nil {
+		requestedCount++
+		if result.SyntheticStatus == "failed" {
 			failedCount++
 		}
 	}
