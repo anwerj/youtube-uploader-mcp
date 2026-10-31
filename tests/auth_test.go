@@ -25,7 +25,7 @@ func (s *YumSuite) TestAuthenticate() {
 		ExpectSuccessText(s.Ctx())
 	s.NoError(err)
 
-	s.Equal(text.Text, expectedAuthURL("https://localhost:8080"))
+	s.Equal(text.Text, expectedAuthURL(configuredRedirectURI))
 	s.assertNoRedirectFile("./data/tmp")
 }
 
