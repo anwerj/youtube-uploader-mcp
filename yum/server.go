@@ -13,11 +13,8 @@ import (
 )
 
 func Build(ctx context.Context, clientSecretFile string, workingDir string) (*server.MCPServer, error) {
-	c := core.NewCore(clientSecretFile)
-	if err := c.WithSecretFile(clientSecretFile); err != nil {
-		return nil, err
-	}
-	if err := c.WithWorkingDir(workingDir); err != nil {
+	c, err := core.NewCore(clientSecretFile, workingDir)
+	if err != nil {
 		return nil, err
 	}
 

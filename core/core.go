@@ -28,20 +28,14 @@ type Core struct {
 	catalog   map[string]videoCatalogEntry
 }
 
-func NewCore(clientSecretFile string) *Core {
-	core := &Core{}
-	return core
-}
-
-func (c *Core) WithSecretFile(secretfile string) error {
-	var err error
-	if secretfile == "" {
-		return fmt.Errorf("secret file must be provided")
+func NewCore(clientSecretFile, workingDir string) (*Core, error) {
+	if clientSecretFile == "" {
+		return nil, fmt.Errorf("secret file must be provided")
 	}
 
-	secrets, err := os.ReadFile(secretfile)
+	secrets, err := os.ReadFile(clientSecretFile)
 	if err != nil {
-		return fmt.Errorf("failed to read secret file: %w", err)
+		return nil, fmt.Errorf("failed to read secret file: %w", err)
 	}
 
 	config, err := google.ConfigFromJSON(
@@ -51,14 +45,11 @@ func (c *Core) WithSecretFile(secretfile string) error {
 		youtube.YoutubeReadonlyScope,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create OAuth2 config: %w", err)
+		return nil, fmt.Errorf("failed to create OAuth2 config: %w", err)
 	}
-	c.config = config
 
-	return nil
-}
-
-func (c *Core) WithWorkingDir(dir string) error {
-	c.workingDir = dir
-	return nil
+	return &Core{
+		config:     config,
+		workingDir: workingDir,
+	}, nil
 }

@@ -53,9 +53,7 @@ func (t *UpdateVideoTool) Define(context.Context) mcp.Tool {
 				"Omit to leave the current visibility unchanged."),
 		),
 		mcp.WithBoolean("contains_synthetic_media",
-			mcp.Description("Optional. Sets YouTube's \"altered or synthetic content\" disclosure, "+
-				"required when the video contains AI-generated voices or visuals. "+
-				"Omit to leave the current setting unchanged."),
+			mcp.Description("Optional. Set YouTube's disclosure for realistic AI-generated or meaningfully altered content. Omit to leave the current setting unchanged."),
 		),
 		mcp.WithBoolean("made_for_kids",
 			mcp.Description("Optional. Whether to mark the video as made for kids (updates status.selfDeclaredMadeForKids). Omit to leave the current setting unchanged."),
