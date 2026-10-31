@@ -7,10 +7,14 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/therewardstore/httpmatter"
 )
+
+// futurePublishAt stays ahead of update_video's "must be in the future" check.
+var futurePublishAt = time.Now().UTC().Add(48 * time.Hour).Truncate(time.Second).Format(time.RFC3339)
 
 func (s *YumSuite) TestUploadVideo() {
 	reqAssert := func(req *http.Request) int {
@@ -288,12 +292,12 @@ func (s *YumSuite) TestUpdateVideoSuccess() {
 		WithParams(mcp.Params{
 			"name": "update_video",
 			"arguments": mcp.Params{
-				"channel_id":         "mock-channel-id",
-				"video_id":           "video_id_12345",
-				"playlist_id":        "playlist_id_12345",
-				"subtitle_path":      "./data/subtitles.srt",
-				"subtitle_language":  "en",
-				"thumbnail_path":     "./data/thumbnail.png",
+				"channel_id":        "mock-channel-id",
+				"video_id":          "video_id_12345",
+				"playlist_id":       "playlist_id_12345",
+				"subtitle_path":     "./data/subtitles.srt",
+				"subtitle_language": "en",
+				"thumbnail_path":    "./data/thumbnail.png",
 			},
 		}).
 		ExpectSuccessText(s.Ctx())
@@ -323,12 +327,12 @@ func (s *YumSuite) TestUpdateVideoPartialFailure() {
 		WithParams(mcp.Params{
 			"name": "update_video",
 			"arguments": mcp.Params{
-				"channel_id":         "mock-channel-id",
-				"video_id":           "video_id_12345",
-				"playlist_id":        "playlist_id_12345",
-				"subtitle_path":      "./data/subtitles.srt",
-				"subtitle_language":  "en",
-				"thumbnail_path":     "./data/thumbnail.png",
+				"channel_id":        "mock-channel-id",
+				"video_id":          "video_id_12345",
+				"playlist_id":       "playlist_id_12345",
+				"subtitle_path":     "./data/subtitles.srt",
+				"subtitle_language": "en",
+				"thumbnail_path":    "./data/thumbnail.png",
 			},
 		}).
 		ExpectSuccessText(s.Ctx())
@@ -356,7 +360,7 @@ func (s *YumSuite) TestUpdateVideoSchedule() {
 			"id": "video_id_12345",
 			"status": {
 				"privacyStatus": "private",
-				"publishAt": "2026-09-20T18:00:00+05:30",
+				"publishAt": "` + futurePublishAt + `",
 				"license": "creativeCommon",
 				"embeddable": false,
 				"publicStatsViewable": false,
@@ -383,7 +387,7 @@ func (s *YumSuite) TestUpdateVideoSchedule() {
 			"arguments": mcp.Params{
 				"channel_id": "mock-channel-id",
 				"video_id":   "video_id_12345",
-				"publish_at": "2026-09-20T18:00:00+05:30",
+				"publish_at": futurePublishAt,
 			},
 		}).
 		ExpectSuccessText(s.Ctx())
@@ -426,9 +430,9 @@ func (s *YumSuite) TestUpdateVideoMadeForKids() {
 		WithParams(mcp.Params{
 			"name": "update_video",
 			"arguments": mcp.Params{
-				"channel_id":     "mock-channel-id",
-				"video_id":       "video_id_12345",
-				"made_for_kids":  true,
+				"channel_id":    "mock-channel-id",
+				"video_id":      "video_id_12345",
+				"made_for_kids": true,
 			},
 		}).
 		ExpectSuccessText(s.Ctx())
@@ -457,7 +461,7 @@ func (s *YumSuite) TestUpdateVideoScheduleAndMadeForKids() {
 			"id": "video_id_12345",
 			"status": {
 				"privacyStatus": "private",
-				"publishAt": "2026-09-20T18:00:00+05:30",
+				"publishAt": "` + futurePublishAt + `",
 				"license": "creativeCommon",
 				"embeddable": false,
 				"publicStatsViewable": false,
@@ -479,10 +483,10 @@ func (s *YumSuite) TestUpdateVideoScheduleAndMadeForKids() {
 		WithParams(mcp.Params{
 			"name": "update_video",
 			"arguments": mcp.Params{
-				"channel_id":     "mock-channel-id",
-				"video_id":       "video_id_12345",
-				"publish_at":     "2026-09-20T18:00:00+05:30",
-				"made_for_kids":  true,
+				"channel_id":    "mock-channel-id",
+				"video_id":      "video_id_12345",
+				"publish_at":    futurePublishAt,
+				"made_for_kids": true,
 			},
 		}).
 		ExpectSuccessText(s.Ctx())

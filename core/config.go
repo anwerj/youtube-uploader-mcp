@@ -9,11 +9,6 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
-const (
-	// DefaultRedirectURI is the default redirect URI for OAuth2 authentication
-	DefaultRedirectURI = "https://localhost:8080"
-)
-
 // Service creates a new YouTube service using the provided OAuth2 token.
 func (c *Core) Service(ctx context.Context, token *oauth2.Token) (*youtube.Service, error) {
 	if token == nil {
@@ -31,4 +26,12 @@ func (c *Core) Service(ctx context.Context, token *oauth2.Token) (*youtube.Servi
 	}
 
 	return service, nil
+}
+
+// DefaultRedirectURI is the redirect URI loaded from the client secret.
+func (c *Core) DefaultRedirectURI() string {
+	if c == nil || c.config == nil {
+		return ""
+	}
+	return c.config.RedirectURL
 }

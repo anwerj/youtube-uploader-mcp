@@ -16,11 +16,14 @@ func (t *AuthenticateTool) Name() string {
 }
 
 func (t *AuthenticateTool) Define(context.Context) mcp.Tool {
+	redirectURI := t.Core.DefaultRedirectURI()
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("Authenticate tools starts the OAuth2 flow for YouTube API."+
-			"It returns an authentication URL that the user needs to open in their browser to complete the authentication process."),
+		mcp.WithDescription("Starts the YouTube OAuth2 flow and returns the authorization URL to open in a browser. "+
+			"redirect_uri is optional and defaults to "+redirectURI+". "+
+			"When a custom redirect_uri is supplied, pass that same URI to accesstoken."),
 		mcp.WithString("redirect_uri",
-			mcp.Description("Redirect URI for OAuth2 authentication, default is "+core.DefaultRedirectURI),
+			mcp.Description("Optional. When omitted, "+redirectURI+" is used. "+
+				"When a custom URI is supplied, the caller must pass it again to accesstoken."),
 		),
 	)
 }
@@ -28,9 +31,12 @@ func (t *AuthenticateTool) Define(context.Context) mcp.Tool {
 func (t *AuthenticateTool) Handle(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	// Implement the authentication logic here
 	// For now, we will just return a dummy response
-	redirectURI := request.GetString("redirect_uri", core.DefaultRedirectURI)
+	redirectURI := request.GetString("redirect_uri", "")
 	if redirectURI == "" {
-		return mcp.NewToolResultError("redirect_uri is required"), nil
+		redirectURI = t.Core.DefaultRedirectURI()
+	}
+	if redirectURI == "" {
+		return mcp.NewToolResultError("redirect URI must be provided"), nil
 	}
 
 	authUrl, err := t.Core.AuthURL(redirectURI)

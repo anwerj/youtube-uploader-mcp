@@ -27,7 +27,10 @@ func (c *Core) AuthURL(redirectURI string) (string, error) {
 }
 
 // GetAccessToken exchanges the authorization code for an access token.
-func (c *Core) GetAccessToken(code string) (*oauth2.Token, error) {
+// redirectURI is optional. When empty, the exchange uses the redirect URI
+// already configured on the OAuth client. When set, that exact value is sent
+// and the shared OAuth config is left unchanged.
+func (c *Core) GetAccessToken(code string, redirectURI string) (*oauth2.Token, error) {
 	if code == "" {
 		return nil, fmt.Errorf("code must be provided")
 	}
@@ -36,7 +39,12 @@ func (c *Core) GetAccessToken(code string) (*oauth2.Token, error) {
 		return nil, fmt.Errorf("OAuth2 config is not initialized in Core")
 	}
 
-	token, err := c.config.Exchange(context.TODO(), code)
+	config := *c.config
+	if redirectURI != "" {
+		config.RedirectURL = redirectURI
+	}
+
+	token, err := config.Exchange(context.TODO(), code)
 	if err != nil {
 		return nil, fmt.Errorf("failed to exchange code for token: %w", err)
 	}
