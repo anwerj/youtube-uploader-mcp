@@ -65,6 +65,9 @@ func (t *UploadVideoTool) Define(context.Context) mcp.Tool {
 		mcp.WithBoolean("made_for_kids",
 			mcp.Description("Whether the video is made exclusively for kids. Default is false"),
 		),
+		mcp.WithBoolean("contains_synthetic_media",
+			mcp.Description("Optional. Set YouTube's disclosure for realistic AI-generated or meaningfully altered content. Omit to leave the field unset."),
+		),
 	)
 }
 
@@ -91,6 +94,10 @@ func (t *UploadVideoTool) Handle(
 		return mcp.NewToolResultError("status must be one of: public, private, unlisted"), nil
 	}
 	madeForKids := request.GetBool("made_for_kids", false)
+	containsSynthetic, err := boolArg(request, "contains_synthetic_media")
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
 	videoLanguage := request.GetString("video_language", "")
 
 	info, err := os.Stat(filePath)
@@ -137,15 +144,16 @@ func (t *UploadVideoTool) Handle(
 	}
 
 	video := core.Video{
-		Path:          filePath,
-		Title:         title,
-		Description:   description,
-		Tags:          strings.Split(tags, ","),
-		CategoryID:    categoryID,
-		Language:      videoLanguage,
-		PrivacyStatus: status,
-		MadeForKids:   madeForKids,
-		PublishAt:     request.GetString("publish_at", ""),
+		Path:                   filePath,
+		Title:                  title,
+		Description:            description,
+		Tags:                   strings.Split(tags, ","),
+		CategoryID:             categoryID,
+		Language:               videoLanguage,
+		PrivacyStatus:          status,
+		MadeForKids:            madeForKids,
+		PublishAt:              request.GetString("publish_at", ""),
+		ContainsSyntheticMedia: containsSynthetic,
 	}
 
 	token := channel.Token

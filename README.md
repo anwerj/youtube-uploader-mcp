@@ -14,7 +14,7 @@ AI‑powered YouTube uploader—no CLI, no YouTube Studio, and no secrets ever s
 * **OAuth2 Authentication**: Secure local login, multi-channel support, and auto-refreshing.
 * **Metadata & Settings**: Category tags, optional language settings, and explicit metadata control.
 * **Privacy & Scheduling**: Support for public, private, or unlisted statuses, and scheduled publish times.
-* **Post-Upload Configs (`update_video`)**: Add videos to playlists, upload custom thumbnails (<2MB), attach subtitles, schedule publish time on already-uploaded videos, and update made-for-kids settings.
+* **Post-Upload Configs (`update_video`)**: Add videos to playlists, upload custom thumbnails (<2MB), attach subtitles, schedule publish time on already-uploaded videos, change visibility, set the altered or synthetic content disclosure, and update made-for-kids settings.
 
 ## Single Command Installation
 
@@ -98,7 +98,7 @@ The MCP server registers the following tools:
 3. `channels`: Retrieves authenticated channels.
 4. `refreshtoken`: Force-refreshes tokens.
 5. `upload_video`: Uploads the video file and configures main details (title, description, tags, category, optional language, status, kids' flags, scheduled publish).
-6. `update_video`: Decoupled tool that manages post-upload configurations: adds the video to a playlist, uploads a custom thumbnail (must be <2MB), attaches subtitle/caption tracks, schedules an existing private video to publish at an RFC3339 time, and updates the made-for-kids audience setting.
+6. `update_video`: Decoupled tool that manages post-upload configurations: adds the video to a playlist, uploads a custom thumbnail (must be <2MB), attaches subtitle/caption tracks, schedules an existing private video to publish at an RFC3339 time, changes visibility (`privacy_status`: public, unlisted, or private), sets YouTube's altered or synthetic content disclosure (`contains_synthetic_media`), and updates the made-for-kids audience setting.
 7. `list_videos`: Lists videos uploaded to a channel (public, unlisted, and private), with optional title/description search, privacy filter, and date ordering.
 
 ## Contributing

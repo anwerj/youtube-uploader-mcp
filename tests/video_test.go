@@ -51,6 +51,7 @@ func (s *YumSuite) TestUploadVideo() {
 		}`
 		s.JSONEq(expectedJSON, string(b))
 		s.NotContains(string(b), "madeForKids")
+		s.NotContains(string(b), "containsSyntheticMedia")
 
 		// Part 2: Video Content
 		p2, err := mr.NextPart()
@@ -85,6 +86,53 @@ func (s *YumSuite) TestUploadVideo() {
 	s.NoError(err)
 
 	s.Contains(text.Text, `{"id":"video_id_12345","path":"./data/videos/video_1.mp4","title":"mock-title","description":"mock-description","tags":["mock-tag1","mock-tag2"],"category_id":"mock-category-id","language":"","privacy_status":"unlisted","made_for_kids":false}`)
+}
+
+func (s *YumSuite) TestUploadVideoSyntheticMediaTrue() {
+	s.assertUploadSynthetic(true)
+}
+
+func (s *YumSuite) TestUploadVideoSyntheticMediaFalse() {
+	s.assertUploadSynthetic(false)
+}
+
+func (s *YumSuite) assertUploadSynthetic(want bool) {
+	syntheticAssert := func(req *http.Request) int {
+		_, params, err := mime.ParseMediaType(req.Header.Get("Content-Type"))
+		s.NoError(err)
+		mr := multipart.NewReader(req.Body, params["boundary"])
+		part, err := mr.NextPart()
+		s.NoError(err)
+		body, err := io.ReadAll(part)
+		s.NoError(err)
+		if want {
+			s.Contains(string(body), `"containsSyntheticMedia":true`)
+		} else {
+			s.Contains(string(body), `"containsSyntheticMedia":false`)
+		}
+		return 0
+	}
+
+	s.mock.Add("upload_video_request", "upload_video_response").Respond(
+		httpmatter.RequestResponse(syntheticAssert))
+	s.mock.Init()
+
+	_, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "upload_video",
+			"arguments": mcp.Params{
+				"channel_id":               "mock-channel-id",
+				"file_path":                "./data/videos/video_1.mp4",
+				"description":              "mock-description",
+				"title":                    "mock-title",
+				"tags":                     "mock-tag1",
+				"category_id":              "mock-category-id",
+				"contains_synthetic_media": want,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
 }
 
 func (s *YumSuite) TestUploadVideoMadeForKidsTrue() {
@@ -364,11 +412,11 @@ func (s *YumSuite) TestUpdateVideoSchedule() {
 				"license": "creativeCommon",
 				"embeddable": false,
 				"publicStatsViewable": false,
-				"selfDeclaredMadeForKids": false,
-				"containsSyntheticMedia": false
+				"selfDeclaredMadeForKids": false
 			}
 		}`
 		s.JSONEq(expectedJSON, string(body))
+		s.NotContains(string(body), "containsSyntheticMedia")
 		// Read-only fields must never be sent back.
 		s.NotContains(string(body), "uploadStatus")
 		s.NotContains(string(body), "madeForKids\":")
@@ -411,11 +459,11 @@ func (s *YumSuite) TestUpdateVideoMadeForKids() {
 				"license": "creativeCommon",
 				"embeddable": false,
 				"publicStatsViewable": false,
-				"selfDeclaredMadeForKids": true,
-				"containsSyntheticMedia": false
+				"selfDeclaredMadeForKids": true
 			}
 		}`
 		s.JSONEq(expectedJSON, string(body))
+		s.NotContains(string(body), "containsSyntheticMedia")
 		s.NotContains(string(body), "publishAt")
 		return 0
 	}
@@ -465,11 +513,11 @@ func (s *YumSuite) TestUpdateVideoScheduleAndMadeForKids() {
 				"license": "creativeCommon",
 				"embeddable": false,
 				"publicStatsViewable": false,
-				"selfDeclaredMadeForKids": true,
-				"containsSyntheticMedia": false
+				"selfDeclaredMadeForKids": true
 			}
 		}`
 		s.JSONEq(expectedJSON, string(body))
+		s.NotContains(string(body), "containsSyntheticMedia")
 		return 0
 	}
 
@@ -556,6 +604,223 @@ func (s *YumSuite) TestUpdateVideoSchedulePastPublishAt() {
 	text, ok := result.Content[0].(mcp.TextContent)
 	s.True(ok)
 	s.Contains(text.Text, "future timestamp")
+}
+
+func (s *YumSuite) TestUpdateVideoPrivacyStatus() {
+	privacyAssert := func(req *http.Request) int {
+		s.Equal("PUT", req.Method)
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		expectedJSON := `{
+			"id": "video_id_12345",
+			"status": {
+				"privacyStatus": "public",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": false
+			}
+		}`
+		s.JSONEq(expectedJSON, string(body))
+		s.NotContains(string(body), "containsSyntheticMedia")
+		s.NotContains(string(body), "publishAt")
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(privacyAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":     "mock-channel-id",
+				"video_id":       "video_id_12345",
+				"privacy_status": "public",
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+	s.Contains(text.Text, `"privacy_status":"success"`)
+	s.NotContains(text.Text, `"synthetic_media_status"`)
+}
+
+func (s *YumSuite) TestUpdateVideoSyntheticMedia() {
+	syntheticAssert := func(req *http.Request) int {
+		s.Equal("PUT", req.Method)
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		expectedJSON := `{
+			"id": "video_id_12345",
+			"status": {
+				"privacyStatus": "private",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": false,
+				"containsSyntheticMedia": true
+			}
+		}`
+		s.JSONEq(expectedJSON, string(body))
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(syntheticAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":               "mock-channel-id",
+				"video_id":                 "video_id_12345",
+				"contains_synthetic_media": true,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+	s.Contains(text.Text, `"synthetic_media_status":"success"`)
+	s.NotContains(text.Text, `"privacy_status"`)
+}
+
+func (s *YumSuite) TestUpdateVideoClearsSyntheticMedia() {
+	clearAssert := func(req *http.Request) int {
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		s.Contains(string(body), `"containsSyntheticMedia":false`)
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(clearAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":               "mock-channel-id",
+				"video_id":                 "video_id_12345",
+				"contains_synthetic_media": false,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+	s.Contains(text.Text, `"synthetic_media_status":"success"`)
+}
+
+func (s *YumSuite) TestUpdateVideoPrivacyAndSyntheticMedia() {
+	combinedAssert := func(req *http.Request) int {
+		body, err := io.ReadAll(req.Body)
+		s.NoError(err)
+		expectedJSON := `{
+			"id": "video_id_12345",
+			"status": {
+				"privacyStatus": "unlisted",
+				"license": "creativeCommon",
+				"embeddable": false,
+				"publicStatsViewable": false,
+				"selfDeclaredMadeForKids": false,
+				"containsSyntheticMedia": true
+			}
+		}`
+		s.JSONEq(expectedJSON, string(body))
+		s.NotContains(string(body), "publishAt")
+		return 0
+	}
+
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "schedule_video_response").Respond(
+		httpmatter.RequestResponse(combinedAssert))
+	s.mock.Init()
+
+	text, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":               "mock-channel-id",
+				"video_id":                 "video_id_12345",
+				"privacy_status":           "unlisted",
+				"contains_synthetic_media": true,
+			},
+		}).
+		ExpectSuccessText(s.Ctx())
+	s.NoError(err)
+	s.Contains(text.Text, `"privacy_status":"success"`)
+	s.Contains(text.Text, `"synthetic_media_status":"success"`)
+}
+
+func (s *YumSuite) TestUpdateVideoStatusUpdateFails() {
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Add("schedule_video_request", "error_response").Respond(nil)
+	s.mock.Init()
+
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":               "mock-channel-id",
+				"video_id":                 "video_id_12345",
+				"privacy_status":           "public",
+				"contains_synthetic_media": false,
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, `"privacy_status":"failed"`)
+	s.Contains(text.Text, `"synthetic_media_status":"failed"`)
+}
+
+func (s *YumSuite) TestUpdateVideoRejectsUnknownPrivacy() {
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":     "mock-channel-id",
+				"video_id":       "video_id_12345",
+				"privacy_status": "everyone",
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, "privacy_status must be one of public, unlisted, private")
+}
+
+func (s *YumSuite) TestUpdateVideoPublishAtRejectsNonPrivate() {
+	s.mock.Add("get_video_request", "get_video_response").Respond(nil)
+	s.mock.Init()
+
+	result, err := s.OnServer("default").
+		WithMethod("tools/call").
+		WithParams(mcp.Params{
+			"name": "update_video",
+			"arguments": mcp.Params{
+				"channel_id":     "mock-channel-id",
+				"video_id":       "video_id_12345",
+				"publish_at":     futurePublishAt,
+				"privacy_status": "public",
+			},
+		}).
+		Call(s.Ctx(), 1, true)
+	s.NoError(err)
+	text, ok := result.Content[0].(mcp.TextContent)
+	s.True(ok)
+	s.Contains(text.Text, "publish_at requires privacy_status private")
 }
 
 func (s *YumSuite) TestForbiddenListVideos() {
