@@ -23,7 +23,7 @@ func (t *UpdateVideoTool) Name() string {
 
 func (t *UpdateVideoTool) Define(context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("Configure or update an existing YouTube video's metadata (add to playlist, upload subtitles, upload custom thumbnail, schedule publish time)"),
+		mcp.WithDescription("Configure or update an existing YouTube video's metadata (add to playlist, upload subtitles, upload custom thumbnail, schedule publish time, change visibility, set the altered or synthetic content disclosure)"),
 		mcp.WithString("channel_id",
 			mcp.Required(),
 			mcp.Description("Channel ID associated with the video"),

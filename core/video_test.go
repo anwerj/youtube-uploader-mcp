@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -19,17 +20,25 @@ func baseStatus() *youtube.VideoStatus {
 }
 
 func TestBuildStatusUpdateKeepsUnspecifiedFields(t *testing.T) {
-	// videos.update replaces the whole status part, so anything the request omits is reset by
-	// YouTube. Setting one field must never clear embeddable/publicStatsViewable.
-	got, err := BuildStatusUpdate(baseStatus(), StatusUpdateOptions{})
+	current := baseStatus()
+	current.ContainsSyntheticMedia = true
+	private := "private"
+	got, err := BuildStatusUpdate(current, StatusUpdateOptions{PrivacyStatus: &private})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if !got.Embeddable || !got.PublicStatsViewable || got.License != "youtube" {
 		t.Fatalf("unspecified fields were not carried over: %+v", got)
 	}
-	if got.PrivacyStatus != "unlisted" {
-		t.Fatalf("privacy changed unexpectedly: %q", got.PrivacyStatus)
+	if got.PrivacyStatus != "private" {
+		t.Fatalf("privacy: got %q, want private", got.PrivacyStatus)
+	}
+	body, err := json.Marshal(got)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if strings.Contains(string(body), "containsSyntheticMedia") {
+		t.Fatalf("omitted synthetic media was serialized: %s", body)
 	}
 }
 
@@ -82,6 +91,13 @@ func TestBuildStatusUpdateSyntheticMediaFlag(t *testing.T) {
 	if got.ContainsSyntheticMedia {
 		t.Fatal("containsSyntheticMedia was not cleared")
 	}
+	body, err := json.Marshal(got)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !strings.Contains(string(body), `"containsSyntheticMedia":false`) {
+		t.Fatalf("explicit false was dropped from the request: %s", body)
+	}
 }
 
 func TestBuildStatusUpdatePublishAtForcesPrivate(t *testing.T) {
@@ -102,19 +118,19 @@ func TestBuildStatusUpdatePublishAtForcesPrivate(t *testing.T) {
 
 func TestBuildStatusUpdatePublishAtCappedWhenPublic(t *testing.T) {
 	when := "2026-12-01T10:00:00Z"
-	cur := baseStatus()
-	cur.PublishAt = when
-	if _, err := BuildStatusUpdate(cur, StatusUpdateOptions{}); err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	cur := &youtube.VideoStatus{
+		PrivacyStatus: "private",
+		PublishAt:     when,
 	}
-	// Promoting a scheduled private video to public must drop the stale publish time, otherwise
-	// YouTube rejects the request.
 	got, err := BuildStatusUpdate(cur, StatusUpdateOptions{PrivacyStatus: strPtr("public")})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got.PublishAt != "" {
 		t.Fatalf("publish time should be cleared for a public video, got %q", got.PublishAt)
+	}
+	if got.PrivacyStatus != "public" {
+		t.Fatalf("privacy: got %q, want public", got.PrivacyStatus)
 	}
 }
 

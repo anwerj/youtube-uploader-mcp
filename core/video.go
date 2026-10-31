@@ -15,16 +15,17 @@ import (
 const maxUploadsPages = 100
 
 type Video struct {
-	ID            string   `json:"id"`
-	Path          string   `json:"path"`
-	Title         string   `json:"title"`
-	Description   string   `json:"description"`
-	Tags          []string `json:"tags"`
-	CategoryID    string   `json:"category_id"`
-	Language      string   `json:"language"`
-	PrivacyStatus string   `json:"privacy_status"`
-	MadeForKids   bool     `json:"made_for_kids"`
-	PublishAt     string   `json:"publish_at,omitempty"`
+	ID                     string   `json:"id"`
+	Path                   string   `json:"path"`
+	Title                  string   `json:"title"`
+	Description            string   `json:"description"`
+	Tags                   []string `json:"tags"`
+	CategoryID             string   `json:"category_id"`
+	Language               string   `json:"language"`
+	PrivacyStatus          string   `json:"privacy_status"`
+	MadeForKids            bool     `json:"made_for_kids"`
+	PublishAt              string   `json:"publish_at,omitempty"`
+	ContainsSyntheticMedia *bool    `json:"contains_synthetic_media,omitempty"`
 }
 
 type VideoSummary struct {
@@ -75,16 +76,22 @@ func (v *Video) toUpload() (*youtube.Video, error) {
 		snippet.DefaultAudioLanguage = v.Language
 	}
 
+	status := &youtube.VideoStatus{
+		PrivacyStatus:           privacy,
+		SelfDeclaredMadeForKids: v.MadeForKids,
+		PublishAt:               v.PublishAt,
+		ForceSendFields: []string{
+			"SelfDeclaredMadeForKids",
+		},
+	}
+	if v.ContainsSyntheticMedia != nil {
+		status.ContainsSyntheticMedia = *v.ContainsSyntheticMedia
+		status.ForceSendFields = append(status.ForceSendFields, "ContainsSyntheticMedia")
+	}
+
 	upload := &youtube.Video{
 		Snippet: snippet,
-		Status: &youtube.VideoStatus{
-			PrivacyStatus:           privacy,
-			SelfDeclaredMadeForKids: v.MadeForKids,
-			PublishAt:               v.PublishAt,
-			ForceSendFields: []string{
-				"SelfDeclaredMadeForKids",
-			},
-		},
+		Status:  status,
 	}
 
 	return upload, nil
@@ -159,7 +166,9 @@ type StatusUpdateOptions struct {
 // status part, and any property the request omits is deleted by YouTube, so
 // every existing mutable value from current is carried over and the booleans
 // are forced onto the wire, since Go's omitempty would otherwise drop the
-// false ones and let YouTube reset them to defaults.
+// false ones and let YouTube reset them to defaults. ContainsSyntheticMedia
+// is the exception: it is sent only when the caller sets it, so an update
+// that omits the flag does not overwrite a disclosure changed after the GET.
 func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (*youtube.VideoStatus, error) {
 	if current == nil {
 		return nil, fmt.Errorf("current video status must be provided")
@@ -168,7 +177,12 @@ func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (
 	privacyStatus := current.PrivacyStatus
 	publishAt := current.PublishAt
 	selfDeclaredMadeForKids := current.SelfDeclaredMadeForKids
-	containsSyntheticMedia := current.ContainsSyntheticMedia
+	var containsSyntheticMedia bool
+	forceSend := []string{
+		"Embeddable",
+		"PublicStatsViewable",
+		"SelfDeclaredMadeForKids",
+	}
 
 	if opts.PrivacyStatus != nil {
 		switch *opts.PrivacyStatus {
@@ -195,6 +209,7 @@ func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (
 	}
 	if opts.ContainsSyntheticMedia != nil {
 		containsSyntheticMedia = *opts.ContainsSyntheticMedia
+		forceSend = append(forceSend, "ContainsSyntheticMedia")
 	}
 
 	// A publish time is only valid on a private video; any other visibility drops it.
@@ -210,12 +225,7 @@ func BuildStatusUpdate(current *youtube.VideoStatus, opts StatusUpdateOptions) (
 		PublicStatsViewable:     current.PublicStatsViewable,
 		SelfDeclaredMadeForKids: selfDeclaredMadeForKids,
 		ContainsSyntheticMedia:  containsSyntheticMedia,
-		ForceSendFields: []string{
-			"Embeddable",
-			"PublicStatsViewable",
-			"SelfDeclaredMadeForKids",
-			"ContainsSyntheticMedia",
-		},
+		ForceSendFields:         forceSend,
 	}, nil
 }
 
