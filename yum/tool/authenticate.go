@@ -17,10 +17,12 @@ func (t *AuthenticateTool) Name() string {
 
 func (t *AuthenticateTool) Define(context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
-		mcp.WithDescription("Authenticate tools starts the OAuth2 flow for YouTube API."+
-			"It returns an authentication URL that the user needs to open in their browser to complete the authentication process."),
+		mcp.WithDescription("Starts the YouTube OAuth2 flow and returns the authorization URL to open in a browser. "+
+			"redirect_uri is optional and defaults to "+core.DefaultRedirectURI+". "+
+			"When a custom redirect_uri is supplied, pass that same URI to accesstoken."),
 		mcp.WithString("redirect_uri",
-			mcp.Description("Redirect URI for OAuth2 authentication, default is "+core.DefaultRedirectURI),
+			mcp.Description("Optional. When omitted, "+core.DefaultRedirectURI+" is used. "+
+				"When a custom URI is supplied, the caller must pass it again to accesstoken."),
 		),
 	)
 }

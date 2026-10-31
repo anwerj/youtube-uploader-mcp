@@ -20,11 +20,15 @@ func (t *AccessTokenTool) Define(ctx context.Context) mcp.Tool {
 	return mcp.NewTool(t.Name(),
 		mcp.WithDescription("AccessToken tool retrieves the access token for YouTube API authentication."+
 			"It requires code to fetch the access token."+
-			"User must first authenticate using the authenticate tool to get the code."+
+			"User must first authenticate using the authenticate tool to get the code. "+
+			"If authenticate used a custom redirect_uri, pass that same URI. "+
 			"It will return channel details ex: ID. Use this ID in further calls to refresh token or upload video"),
 		mcp.WithString("code",
 			mcp.Required(),
 			mcp.Description("The code part received on redirected URL, Only send the code part, not the full URL."),
+		),
+		mcp.WithString("redirect_uri",
+			mcp.Description("Optional. Required when a custom redirect_uri was used in authenticate; otherwise, the configured default is used."),
 		),
 	)
 }
@@ -34,8 +38,9 @@ func (t *AccessTokenTool) Handle(ctx context.Context, request mcp.CallToolReques
 	if code == "" {
 		return mcp.NewToolResultError("code is required"), nil
 	}
+	redirectURI := request.GetString("redirect_uri", "")
 
-	token, err := t.Core.GetAccessToken(code)
+	token, err := t.Core.GetAccessToken(code, redirectURI)
 	if err != nil {
 		return mcp.NewToolResultError("Failed to get access token: " + err.Error()), nil
 	}
