@@ -83,16 +83,23 @@ func (c *Core) SaveChannel(channel *Channel) error {
 	}
 	channels[channel.ID] = channel
 
-	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
-	// Open file or create it
-	file, err := os.OpenFile(fChannelsPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	plaintext, err := json.Marshal(channels)
 	if err != nil {
-		return fmt.Errorf("failed to open or create channels file: %s", err.Error())
+		return fmt.Errorf("failed to save channels: %s", err.Error())
 	}
-	defer file.Close()
 
-	err = json.NewEncoder(file).Encode(channels)
+	key, err := loadOrCreateEncryptionKey(c.workingDir)
 	if err != nil {
+		return fmt.Errorf("failed to load encryption key: %w", err)
+	}
+
+	ciphertext, err := encryptBytes(key, plaintext)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt channels: %w", err)
+	}
+
+	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
+	if err := os.WriteFile(fChannelsPath, ciphertext, 0600); err != nil {
 		return fmt.Errorf("failed to save channels: %s", err.Error())
 	}
 
@@ -101,18 +108,32 @@ func (c *Core) SaveChannel(channel *Channel) error {
 
 func (c *Core) ReadChannels(ignoreError bool) (Channels, error) {
 	fChannelsPath := filepath.Join(c.workingDir, fChannelsFileName)
-	file, err := os.Open(fChannelsPath)
+	ciphertext, err := os.ReadFile(fChannelsPath)
 	if err != nil {
 		if os.IsNotExist(err) && ignoreError {
 			return make(Channels), nil // Return an empty Channels map if the file does not exist
 		}
 		return nil, fmt.Errorf("failed to open channels file: %s", err.Error())
 	}
-	defer file.Close()
+
+	key, err := loadOrCreateEncryptionKey(c.workingDir)
+	if err != nil {
+		if ignoreError {
+			return make(Channels), nil
+		}
+		return nil, fmt.Errorf("failed to load encryption key: %w", err)
+	}
+
+	plaintext, err := decryptBytes(key, ciphertext)
+	if err != nil {
+		if ignoreError {
+			return make(Channels), nil // Legacy plaintext cache or corrupt/foreign file: start fresh.
+		}
+		return nil, fmt.Errorf("failed to decrypt channels file: %w", err)
+	}
 
 	var channels Channels
-	err = json.NewDecoder(file).Decode(&channels)
-	if err != nil {
+	if err := json.Unmarshal(plaintext, &channels); err != nil {
 		if ignoreError {
 			return make(Channels), nil // Return an empty Channels map if the file does not exist
 		}
