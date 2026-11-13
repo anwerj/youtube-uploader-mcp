@@ -14,7 +14,7 @@ import (
 
 const (
 	uploadEarlyReturn = 30 * time.Second
-	uploadHardTimeout = 10 * time.Minute
+	uploadHardTimeout = 2 * time.Hour
 )
 
 type UploadVideoTool struct {

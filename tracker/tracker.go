@@ -92,7 +92,7 @@ func RunTool(
 	go func() {
 		defer cancel()
 		result, err := fn(ctx)
-		if ctx.Err() == context.DeadlineExceeded {
+		if err != nil && ctx.Err() == context.DeadlineExceeded {
 			err = fmt.Errorf("operation still in progress after %v", opts.HardTimeout)
 		}
 		ch <- done{result: result, err: err}
