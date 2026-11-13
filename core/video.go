@@ -117,7 +117,7 @@ func (c *Core) UploadVideo(ctx context.Context, video *Video, token *oauth2.Toke
 	}
 
 	call := service.Videos.Insert([]string{"snippet", "status"}, upload)
-	resp, err := call.Media(file).Do()
+	resp, err := call.Media(file).Context(ctx).Do()
 	if err != nil {
 		return "", fmt.Errorf("failed to upload video: %w", err)
 	}
