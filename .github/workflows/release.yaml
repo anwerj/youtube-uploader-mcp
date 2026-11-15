@@ -39,7 +39,7 @@ jobs:
 
             echo "🔧 Building for $GOOS/$GOARCH"
             env GOOS=$GOOS GOARCH=$GOARCH \
-              go build -ldflags "-s -w" -o "$output" .
+              go build -ldflags "-s -w -X github.com/anwerj/youtube-uploader-mcp/yum.Version=${GITHUB_REF_NAME#v}" -o "$output" .
           done
 
       - name: Upload release assets
