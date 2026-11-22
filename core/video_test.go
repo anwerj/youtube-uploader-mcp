@@ -1,10 +1,13 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 
+	"golang.org/x/oauth2"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -152,3 +155,14 @@ func TestBuildStatusUpdateRequiresCurrentStatus(t *testing.T) {
 }
 
 func strPtr(s string) *string { return &s }
+
+func TestUploadVideoStopsWhenContextIsDone(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	c := &Core{config: &oauth2.Config{}}
+	_, err := c.UploadVideo(ctx, &Video{Path: "../tests/data/videos/video_1.mp4"}, &oauth2.Token{AccessToken: "test"})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+}

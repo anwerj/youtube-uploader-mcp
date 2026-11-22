@@ -165,3 +165,31 @@ func TestRunToolHardTimeout(t *testing.T) {
 		t.Fatalf("expected a timeout error message to be recorded")
 	}
 }
+
+func TestRunToolLateSuccessKeepsResult(t *testing.T) {
+	tr := New()
+	keyFields := map[string]string{"a": "1"}
+
+	_, err := RunTool(tr, MCPRunOptions{
+		ToolName:    "test",
+		KeyFields:   keyFields,
+		EarlyReturn: 5 * time.Millisecond,
+		HardTimeout: 20 * time.Millisecond,
+	}, func(ctx context.Context) (*mcp.CallToolResult, error) {
+		<-ctx.Done()
+		return mcp.NewToolResultText("done"), nil
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	time.Sleep(80 * time.Millisecond)
+
+	job, ok := Get(tr, BuildKeyFromFields(keyFields))
+	if !ok {
+		t.Fatalf("expected job to be present in registry")
+	}
+	if job.Status != StatusSuccess {
+		t.Fatalf("expected status=success, got %q (%s)", job.Status, job.Error)
+	}
+}
