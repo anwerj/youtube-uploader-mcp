@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"os/user"
 
@@ -22,6 +23,13 @@ func main() {
 	// expect a flag to be passed for the client secret file
 	// if not provided, it will use the default "./client_secrets.json"
 	flag.Parse()
+	// Optional: YTU_DNS=8.8.8.8:53 makes this process resolve hosts through that server
+	// (for networks whose router DNS fails on googleapis.com). Unset = system resolver.
+	if dns := os.Getenv("YTU_DNS"); dns != "" {
+		net.DefaultResolver = &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
+			return (&net.Dialer{}).DialContext(ctx, network, dns)
+		}}
+	}
 	if *showVersion {
 		fmt.Println(yum.Version)
 		return
